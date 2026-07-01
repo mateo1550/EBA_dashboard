@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  --font-sans: "Manrope", sans-serif;
+
+  --color-background: hsl(210, 14%, 96%);
+  --color-foreground: hsl(220, 26%, 14%);
+
+  --color-card: hsl(0, 0%, 100%);
+  --color-card-foreground: hsl(220, 26%, 14%);
+
+  --color-popover: hsl(0, 0%, 100%);
+  --color-popover-foreground: hsl(220, 26%, 14%);
+
+  --color-primary: hsl(214, 100%, 55%);
+  --color-primary-foreground: hsl(210, 40%, 98%);
+
+  --color-secondary: hsl(210, 40%, 96%);
+  --color-secondary-foreground: hsl(222.2, 47.4%, 11.2%);
+
+  --color-muted: hsl(210, 40%, 96%);
+  --color-muted-foreground: hsl(215, 14%, 46%);
+
+  --color-accent: hsl(210, 40%, 96%);
+  --color-accent-foreground: hsl(222.2, 47.4%, 11.2%);
+
+  --color-destructive: hsl(0, 84.2%, 60.2%);
+  --color-destructive-foreground: hsl(210, 40%, 98%);
+
+  --color-border: hsl(214.3, 31.8%, 91.4%);
+  --color-input: hsl(214.3, 31.8%, 91.4%);
+  --color-ring: hsl(214, 100%, 55%);
+
+  --radius-lg: 1rem;
+  --radius-md: 0.875rem;
+  --radius-sm: 0.75rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5);
+}

@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
+import 'dotenv/config'
 
-const supabaseUrl = 'https://ebasupabase.agenteeba.online'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzE1MDUwODAwLAogICJleHAiOiAxODcyODE3MjAwCn0.20DtBmWlcThQfKcSka8yuyoaFIE0DQP7zXxpQTgruP8'
+const supabaseUrl = process.env.VITE_SUPABASE_URL || 'URL_REMOVED'
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || 'KEY_REMOVED'
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 

@@ -1,5 +1,4 @@
 import { Bar, BarChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, CartesianGrid } from "recharts";
-import { CalendarDays } from "lucide-react";
 
 interface DaysVolumeCardProps {
   diasVolumen: { dia: string; count: number }[];
@@ -47,7 +46,7 @@ export function DaysVolumeCard({ diasVolumen }: DaysVolumeCardProps) {
                   color: 'hsl(var(--foreground))'
                 }}
                 labelFormatter={(label) => `Día ${label}`}
-                formatter={(value: number) => [value, 'Pagos']}
+                formatter={(value: any) => [value, 'Pagos']}
               />
               <Bar 
                 dataKey="count" 

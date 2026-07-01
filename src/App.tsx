@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { usePagos } from "@/hooks/usePagos";
-import { PagosTable } from "@/components/PagosTable";
 import { WeeklyChart } from "@/components/WeeklyChart";
 import { BankMetrics } from "@/components/BankMetrics";
 import { SummaryCard } from "@/components/SummaryCard";

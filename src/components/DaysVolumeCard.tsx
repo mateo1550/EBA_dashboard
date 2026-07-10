@@ -45,6 +45,7 @@ export function DaysVolumeCard({ diasVolumen }: DaysVolumeCardProps) {
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                   color: 'hsl(var(--foreground))'
                 }}
+                itemStyle={{ color: '#000000' }}
                 labelFormatter={(label) => `Día ${label}`}
                 formatter={(value: any) => [value, 'Pagos']}
               />

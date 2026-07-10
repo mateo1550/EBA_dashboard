@@ -10,6 +10,7 @@ interface SummaryCardProps {
   porcentajeConfirmadosManual: number;
   porcentajeSinConfirmar: number;
   pagosWhatsapp?: number;
+  mesActual: string;
 }
 
 export function SummaryCard({
@@ -20,7 +21,8 @@ export function SummaryCard({
   porcentajeConfirmados,
   porcentajeConfirmadosManual,
   porcentajeSinConfirmar,
-  pagosWhatsapp
+  pagosWhatsapp,
+  mesActual
 }: SummaryCardProps) {
   return (
     <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col gap-5 w-full">
@@ -32,10 +34,12 @@ export function SummaryCard({
             <TooltipProvider delayDuration={300}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
+                  <div className="cursor-help inline-flex">
+                    <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                  </div>
                 </TooltipTrigger>
-                <TooltipContent className="font-body text-xs bg-popover border-border">
-                  <p>Métricas de automatización general del mes.</p>
+                <TooltipContent className="font-body text-xs bg-popover border-border text-popover-foreground z-50">
+                  <p>Resumen de el mes {mesActual}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

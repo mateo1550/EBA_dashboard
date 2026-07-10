@@ -4,9 +4,10 @@ import { WeeklyChart } from "@/components/WeeklyChart";
 import { BankMetrics } from "@/components/BankMetrics";
 import { SummaryCard } from "@/components/SummaryCard";
 import { DaysVolumeCard } from "@/components/DaysVolumeCard";
-import { LayoutDashboard } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
+import logoGapfixers from "@/assets/logo_gapfixers.png";
 
 function App() {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
@@ -35,9 +36,9 @@ function App() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border/50 sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-[800px] mx-auto px-6 h-16 flex items-center justify-between gap-8">
           <div className="flex items-center gap-3 text-foreground">
-            <LayoutDashboard className="h-6 w-6 text-primary" />
+            <img src="https://framerusercontent.com/images/AllEQNB8hDFS94G6NNnGznySgQ.png?scale-down-to=512&width=1080&height=540" alt="Logo Escuela" className="h-8 object-contain" />
             <h1 className="font-display font-bold text-xl tracking-tight">EBA Analytics</h1>
             {!isLoading && data?.totalHistorico !== undefined && (
               <div className="ml-4 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium border border-primary/20">
@@ -75,6 +76,7 @@ function App() {
                 porcentajeConfirmadosManual={data?.porcentajeConfirmadosManual || 0}
                 porcentajeSinConfirmar={data?.porcentajeSinConfirmar || 0}
                 pagosWhatsapp={data?.pagosWhatsapp || 0}
+                mesActual={format(selectedMonth, 'MMMM', { locale: es })}
               />
             )}
             
@@ -104,9 +106,11 @@ function App() {
           )}
         </div>
 
-
-
-
+        {/* Footer */}
+        <div className="w-full max-w-6xl mx-auto mt-4 mb-8 flex justify-center items-center gap-2 opacity-50 hover:opacity-100 transition-opacity">
+          <span className="text-xs text-muted-foreground font-body">desarrollado por Gapfixers</span>
+          <img src={logoGapfixers} alt="Gapfixers Logo" className="h-4 object-contain" />
+        </div>
       </main>
     </div>
   );

@@ -1,0 +1,973 @@
+{
+  "updatedAt": "2026-07-14T18:27:41.036Z",
+  "createdAt": "2026-03-16T18:28:31.216Z",
+  "id": "Fco2AQEuXeOpJKtE",
+  "name": "BT_info_general",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "phone_number"
+            },
+            {
+              "name": "conversation_id",
+              "type": "number"
+            },
+            {
+              "name": "lote_tipo"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -992,
+        400
+      ],
+      "id": "4793b6ee-8827-4c7c-9cf6-1f8b527a6004",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/gemini-3-pro/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 8eee2a0b38dd8ffbb8ed664952074823"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"Analiz\u00e1 esta factura y extra\u00e9 la informaci\u00f3n en formato JSON estricto, sin texto adicional, sin bloques de c\u00f3digo markdown.\\n\\nDevolv\u00e9 exactamente esta estructura:\\n\\n{\\n  \\\"proveedor\\\": {\\n    \\\"nombre\\\": \\\"\\\",\\n    \\\"proveedor_nombre_fantasia\\\": \\\"\\\",\\n    \\\"cuit_rut_nit\\\": \\\"\\\",\\n    \\\"tipo_documento\\\": \\\"\\\",\\n    \\\"direccion\\\": \\\"\\\",\\n    \\\"telefono\\\": \\\"\\\",\\n    \\\"email\\\": \\\"\\\"\\n  },\\n  \\\"factura\\\": {\\n    \\\"numero\\\": \\\"\\\",\\n    \\\"fecha\\\": \\\"\\\",\\n    \\\"tipo\\\": \\\"\\\",\\n    \\\"moneda\\\": \\\"\\\"\\n  },\\n  \\\"productos\\\": [\\n    {\\n      \\\"descripcion\\\": \\\"\\\",\\n      \\\"codigo\\\": \\\"\\\",\\n      \\\"cantidad\\\": 0,\\n      \\\"unidad\\\": \\\"\\\",\\n      \\\"precio_unitario\\\": 0,\\n      \\\"descuento\\\": 0,\\n      \\\"precio_total\\\": 0\\n    }\\n  ],\\n  \\\"totales\\\": {\\n    \\\"subtotal\\\": 0,\\n    \\\"descuento_total\\\": 0,\\n    \\\"impuestos\\\": 0,\\n    \\\"total\\\": 0\\n  }\\n}\\n\\nReglas:\\n- Si un campo no existe en la factura, dejalo como string vac\u00edo \\\"\\\" o 0 seg\u00fan el tipo.\\n- El campo tipo_documento indica si es CUIT, RUT, NIT, RFC u otro identificador fiscal.\\n- Los valores num\u00e9ricos deben ser n\u00fameros, no strings.\\n- Si hay varios impuestos (IVA, percepciones, etc.), sumalos todos en el campo impuestos.\\n- No inventes datos que no est\u00e9n visibles en la imagen.\\n- El campo proveedor_nombre_fantasia es el nombre del proveedor sin siglas legales ni formas societarias. Elimin\u00e1 cualquier t\u00e9rmino como S.R.L., S.A., S.A.S., S.C., LTDA., INC., CORP., CIA., y equivalentes, incluyendo sus variantes con o sin puntos. Conserv\u00e1 \u00fanicamente el nombre o palabras que identifican al negocio. Ejemplos: \\\"MATEG S.R.L.\\\" \u2192 \\\"MATEG\\\" | \\\"ALIMENTOS VICTORIA S.A.\\\" \u2192 \\\"ALIMENTOS VICTORIA\\\" | \\\"MEGAMIX DISTRIBUIDOR SRL\\\" \u2192 \\\"MEGAMIX DISTRIBUIDOR\\\".\\n\\nRegla del campo numero:\\nBusc\u00e1 la letra identificatoria del comprobante, que suele aparecer dentro de un c\u00edrculo o recuadro destacado cerca del encabezado (ej. \\\"A\\\", \\\"B\\\", \\\"C\\\", \\\"M\\\", \\\"X\\\"), a veces junto a un c\u00f3digo como \\\"Cod. 01\\\". Si encontr\u00e1s esa letra, anteponela al n\u00famero del comprobante separada por un guion, formato LETRA-NUMERO. Ejemplo: letra \\\"A\\\" y n\u00famero \\\"00003-00030392\\\" \u2192 \\\"numero\\\": \\\"A-00003-00030392\\\". Si el documento no tiene letra identificatoria visible, dej\u00e1 el campo numero solo con el n\u00famero, sin prefijo. No inventes la letra si no est\u00e1 claramente visible.\\n\\nRegla del campo tipo:\\nEl campo tipo indica \u00fanicamente si el documento es una Factura letra A o no. Si el encabezado dice \\\"FACTURA\\\" y la letra identificatoria del comprobante (la misma que us\u00e1s para el prefijo de numero) es \\\"A\\\", el valor debe ser \\\"Factura\\\". En cualquier otro caso \u2014 Factura B, Factura C, Remito, Nota de Cr\u00e9dito, Nota de D\u00e9bito, Ticket, o cualquier otro comprobante \u2014 el valor debe ser \\\"comprobante_de_venta\\\". Si no pod\u00e9s determinar con certeza la letra o el tipo de documento, us\u00e1 \\\"comprobante_de_venta\\\" por defecto. Nunca asumas \\\"Factura\\\" si no est\u00e1s segura de que la letra es A.\\n\\nRegla del campo fecha:\\nExtra\u00e9 la fecha de emisi\u00f3n del comprobante (no fechas de vencimiento de CAE u otras). Devolv\u00e9 siempre la fecha en formato DD-MM-YYYY, sin importar c\u00f3mo est\u00e9 escrita en el documento (con barras, espacios o guiones). El d\u00eda y el mes deben tener siempre 2 d\u00edgitos, con cero a la izquierda si corresponde. Ejemplo: 5/1/26 \u2192 \\\"05-01-2026\\\". Si el a\u00f1o tiene solo 2 d\u00edgitos, expandilo a 4 d\u00edgitos asumiendo el siglo 2000. Ejemplo: 27/05/26 \u2192 \\\"27-05-2026\\\". Si la fecha no es legible o no est\u00e1 presente, dej\u00e1 el campo como string vac\u00edo.\\n\\nRegla de bultos:\\nCuando la cantidad est\u00e9 expresada en bultos, cajas, packs u otra unidad de agrupaci\u00f3n, calcul\u00e1 la cantidad total en unidades individuales antes de retornarla. Identific\u00e1 cu\u00e1ntas unidades trae cada bulto (ese dato suele estar en la descripci\u00f3n o como \\\"x12\\\", \\\"por 6 u.\\\", etc.), multiplic\u00e1 bultos por unidades por bulto y retorn\u00e1 el resultado en el campo cantidad. Us\u00e1 \\\"unidad\\\" en el campo unidad. Ejemplo: 2 bultos x 12 unidades \u2192 \\\"cantidad\\\": 24, \\\"unidad\\\": \\\"unidad\\\". Caso especial: si al pie o en cualquier parte del documento aparece una referencia global del tipo BULTOS 4, BULTOS 4 (CUATRO) o similar, multiplic\u00e1 la cantidad de cada producto por ese n\u00famero y retorn\u00e1 el resultado en el campo cantidad. Ejemplo: BULTOS 4 con cantidad 50 \u2192 cantidad: 200.\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"{{ $json.propertyName[0] }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"stream\": false\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        48,
+        480
+      ],
+      "id": "5a895764-8faf-4881-a130-85fa116bc636",
+      "name": "extrae_info"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('When Executed by Another Workflow').item.json.phone_number }}factura"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        96
+      ],
+      "id": "61e45c62-2efd-45ee-bf72-eebd54e9c2dc",
+      "name": "delete_img",
+      "credentials": {
+        "redis": {
+          "id": "oN28XQrwti8IINl5",
+          "name": "Redis account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $('When Executed by Another Workflow').item.json.phone_number }}factura",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        400
+      ],
+      "id": "c751b38f-0186-45d3-a780-41fd242c9702",
+      "name": "recoge_imagenes",
+      "credentials": {
+        "redis": {
+          "id": "oN28XQrwti8IINl5",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e79d4098-a9d4-4ead-b44a-23bc9fa09832",
+              "leftValue": "={{ $json.propertyName[0] }}",
+              "rightValue": ".pdf",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -256,
+        400
+      ],
+      "id": "7e12de26-bbbb-42a6-92db-9c1b15e5ad0b",
+      "name": "pdf?"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.audioUrl }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        240,
+        240
+      ],
+      "id": "783c6db3-19fc-4173-8e16-11f976271b72",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "responses": {
+          "values": [
+            {
+              "type": "file",
+              "fileType": "base64",
+              "fileName": "text"
+            },
+            {
+              "role": "system",
+              "content": "=## Rol y Objetivo\n\nSos un extractor de datos de documentos comerciales.\nRecib\u00eds la imagen de una factura y tu \u00fanica tarea es devolver un JSON estricto con la informaci\u00f3n extra\u00edda.\nNo respondas nada m\u00e1s. No expliques nada. No uses bloques de c\u00f3digo markdown. Solo devolv\u00e9 el JSON.\n\n---\n\n## Estructura de respuesta obligatoria\n\nDevolv\u00e9 exactamente esta estructura, respetando los tipos de datos indicados:\n\n{\n  \"proveedor\": {\n    \"nombre\": \"\",\n    \"proveedor_nombre_fantasia\": \"\",\n    \"cuit_rut_nit\": \"\",\n    \"tipo_documento\": \"\",\n    \"direccion\": \"\",\n    \"telefono\": \"\",\n    \"email\": \"\"\n  },\n  \"factura\": {\n    \"numero\": \"\",\n    \"fecha\": \"\",\n    \"tipo\": \"\",\n    \"moneda\": \"\"\n  },\n  \"productos\": [\n    {\n      \"descripcion\": \"\",\n      \"codigo\": \"\",\n      \"cantidad\": 0,\n      \"unidad\": \"\",\n      \"precio_unitario\": 0,\n      \"descuento\": 0,\n      \"precio_total\": 0\n    }\n  ],\n  \"totales\": {\n    \"subtotal\": 0,\n    \"descuento_total\": 0,\n    \"impuestos\": 0,\n    \"total\": 0\n  }\n}\n\n---\n\n## Reglas de extracci\u00f3n\n\n- Extra\u00e9 \u00fanicamente los datos que est\u00e9n visibles en la imagen. No inventes ni infer\u00e1s informaci\u00f3n ausente.\n- Si un campo no existe en la factura, dej\u00e1 el valor como string vac\u00edo `\"\"` o como `0` seg\u00fan el tipo de dato del campo.\n- Los valores num\u00e9ricos deben ser n\u00fameros, no strings.\n- El campo `tipo_documento` indica el identificador fiscal del proveedor: CUIT, RUT, NIT, RFC u otro equivalente seg\u00fan el pa\u00eds.\n- Si la factura tiene varios impuestos (IVA, percepciones, retenciones, etc.), sumalos todos en el campo `impuestos`.\n- Si hay m\u00faltiples productos, inclu\u00ed un objeto por cada \u00edtem dentro del array `productos`.\n- El campo `proveedor_nombre_fantasia` corresponde al nombre comercial del proveedor sin siglas ni clasificaciones jur\u00eddicas. Elimin\u00e1 t\u00e9rminos como S.A., S.R.L., S.A.S., LTDA., S.C., E.I.R.L., S.A. de C.V., LLC, INC., CORP., y cualquier equivalente en cualquier idioma o pa\u00eds. Tambi\u00e9n elimin\u00e1 palabras completas como \"SOCIEDAD\", \"ANONIMA\", \"LIMITADA\", \"EMPRESA\", \"COMPA\u00d1IA\", \"COMERCIAL\", \"INDUSTRIAL\" cuando aparezcan al final del nombre como parte de la clasificaci\u00f3n jur\u00eddica. El resultado debe ser \u00fanicamente el nombre principal con el que se identifica comercialmente el proveedor.\n\n### Regla del campo `numero`\n\n- Busc\u00e1 la letra identificatoria del comprobante: suele aparecer dentro de un c\u00edrculo o recuadro destacado cerca del encabezado (ej. \"A\", \"B\", \"C\", \"M\", \"X\"), a veces acompa\u00f1ada de un c\u00f3digo como \"Cod. 01\".\n- Si encontr\u00e1s esa letra, anteponela al n\u00famero del comprobante separada por un guion, con el formato: `LETRA-NUMERO`. Ejemplo: si la letra es \"A\" y el n\u00famero es \"00003-00030392\", el campo `numero` debe quedar como `\"A-00003-00030392\"`.\n- Si el documento no tiene una letra identificatoria visible (por ejemplo, un remito sin clasificaci\u00f3n fiscal A/B/C), dej\u00e1 el campo `numero` solo con el n\u00famero, sin prefijo.\n- No inventes la letra si no est\u00e1 claramente visible en la imagen.\n\n### Regla del campo `tipo`\n\n- El campo `tipo` indica \u00fanicamente si el documento es una **Factura letra A** o no.\n- Si el encabezado dice \"FACTURA\" **y** la letra identificatoria del comprobante (la misma que us\u00e1s para el prefijo de `numero`) es **\"A\"** \u2192 el valor debe ser `\"Factura\"`.\n- En cualquier otro caso \u2014 Factura B, Factura C, Remito, Nota de Cr\u00e9dito, Nota de D\u00e9bito, Ticket, o cualquier otro comprobante \u2014 el valor debe ser `\"comprobante_de_venta\"`.\n- Si no pod\u00e9s determinar con certeza la letra o el tipo de documento, us\u00e1 `\"comprobante_de_venta\"` por defecto. Nunca asumas `\"Factura\"` si no est\u00e1s segura de que la letra es \"A\".\n\n### Regla del campo `fecha`\n\n- Extra\u00e9 la fecha del comprobante (la fecha de emisi\u00f3n, no fechas de vencimiento de CAE u otras).\n- Devolv\u00e9 siempre la fecha en formato `DD-MM-YYYY`, sin importar c\u00f3mo est\u00e9 escrita en el documento (con `/`, con espacios, con guiones, etc.).\n- El d\u00eda y el mes deben tener siempre 2 d\u00edgitos (con cero a la izquierda si corresponde). Ejemplo: `5/1/26` \u2192 `\"05-01-2026\"`.\n- Si el a\u00f1o en el documento tiene solo 2 d\u00edgitos, expandilo a 4 d\u00edgitos asumiendo el siglo 2000. Ejemplo: `27/05/26` \u2192 `\"27-05-2026\"`.\n- No inventes la fecha si no es legible o no est\u00e1 presente; en ese caso dej\u00e1 el campo como string vac\u00edo `\"\"`.\n\n---\n\n## Regla de interpretaci\u00f3n de bultos\n\nCuando la cantidad en la factura est\u00e9 expresada en bultos, cajas, packs u otra unidad de agrupaci\u00f3n, deb\u00e9s calcular la cantidad total en unidades individuales antes de retornarla.\n\nPara hacerlo:\n- Identific\u00e1 cu\u00e1ntas unidades trae cada bulto (este dato suele aparecer en la descripci\u00f3n del producto, en una columna de contenido por bulto, o como \"x12\", \"x6\", \"por 12 u.\", etc.).\n- Multiplic\u00e1 la cantidad de bultos por las unidades por bulto.\n- Retorn\u00e1 el resultado en el campo `cantidad` como n\u00famero entero de unidades.\n- En el campo `unidad` indic\u00e1 \"unidad\" (no \"bulto\" ni \"caja\").\n\nEjemplo: si la factura dice 2 bultos de cobijas con 12 unidades por bulto \u2192 `\"cantidad\": 24`, `\"unidad\": \"unidad\"`.\n\n- Caso especial \u2014 bultos globales del remito: si al pie o en cualquier parte del documento aparece una referencia global del tipo \"BULTOS 4\", \"BULTOS 4 (CUATRO)\" o similar, ese n\u00famero indica que todas las cantidades de todos los productos deben multiplicarse por ese valor. Aplic\u00e1 la multiplicaci\u00f3n a cada producto por separado y retorn\u00e1 las cantidades ya calculadas en unidades. Ejemplo: si dice \"BULTOS 4\" y un producto tiene cantidad 50, retorn\u00e1 `\"cantidad\": 200`."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        416,
+        240
+      ],
+      "id": "3565688f-0b7c-48c8-bea2-e19cbc2ffd51",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZeagSVvuyp06h0Np",
+          "name": "OpenAi Sabri account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lee el data_url crudo desde el input (puede venir como /rails/active_storage... o con alg\u00fan prefijo inv\u00e1lido)\nconst rawUrl =$input.first().json.propertyName[0];\n\n// Busca la parte desde /rails/active_storage...\nconst index = rawUrl.indexOf('/rails/active_storage');\nconst path = rawUrl.slice(index);\n\n// Arma la URL absoluta con el prefijo correcto\nconst prefijo = 'https://dfchatwoot.sistemadistribuidorafenix.com/';\nconst finalUrl = prefijo + path;\n\n// Devuelve la nueva URL en el output para usar en el siguiente nodo\nreturn [\n  {\n    json: {\n      audioUrl: finalUrl\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        240
+      ],
+      "id": "5b12682e-ca92-4f6e-a9cd-3de49b9bc0ea",
+      "name": "changeLink2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtener los datos de n8n de forma segura\nconst itemData = items[0].json;\n\n// Funci\u00f3n helper: limpia bloques de markdown (```json ... ``` o ``` ... ```)\n// antes de intentar parsear como JSON.\nfunction limpiarYParsear(raw) {\n  if (typeof raw !== 'string') return raw;\n\n  let limpio = raw.trim();\n\n  // Si viene envuelto en bloque de c\u00f3digo markdown, lo removemos\n  if (limpio.startsWith('```')) {\n    limpio = limpio\n      .replace(/^```[a-zA-Z]*\\n?/, '') // saca la apertura ```json o ```\n      .replace(/```$/, '')             // saca el cierre ```\n      .trim();\n  }\n\n  return JSON.parse(limpio);\n}\n\ntry {\n  let content;\n\n  // 2. Extraer el contenido del mensaje seg\u00fan la estructura del input.txt\n  if (itemData.choices && itemData.choices[0] && itemData.choices[0].message) {\n    const rawContent = itemData.choices[0].message.content;\n    content = limpiarYParsear(rawContent);\n  } else if (itemData.data) {\n    // Por si viene envuelto en una propiedad 'data'\n    const rawData = typeof itemData.data === 'string' ? JSON.parse(itemData.data) : itemData.data;\n    const rawContent = rawData.choices[0].message.content;\n    content = limpiarYParsear(rawContent);\n  } else {\n    throw new Error(\"No se encontr\u00f3 la estructura esperada de la IA (choices.message.content).\");\n  }\n\n  // 3. Desestructurar los datos validados\n  const { proveedor, factura, productos, totales } = content;\n\n  // 4. Mapear y normalizar cada producto al formato de salida de n8n\n  return productos.map(p => ({\n    json: {\n      proveedor_nombre:          proveedor?.nombre || null,\n      proveedor_nombre_fantasia: proveedor?.proveedor_nombre_fantasia || null,\n      proveedor_cuit:            proveedor?.cuit_rut_nit || null,\n      factura_numero:            factura?.numero || null,\n      factura_fecha:             factura?.fecha || null,\n      factura_tipo:              factura?.tipo || null,\n      producto_codigo:           p.codigo || null,\n      producto_descripcion:      p.descripcion || null,\n      cantidad:                  Number(p.cantidad) || 0,\n      precio_unitario:           Number(p.precio_unitario) || 0,\n      descuento:                 Number(p.descuento) || 0,\n      precio_total:              Number(p.precio_total) || 0,\n      subtotal_factura:          totales?.subtotal || 0,\n      impuestos_factura:         totales?.impuestos || 0,\n      total_factura:             totales?.total || 0\n    }\n  }));\n\n} catch (error) {\n  // En caso de error, devuelve un objeto con el detalle en lugar de romper el flujo\n  return [{\n    json: {\n      error: true,\n      message: error.message\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        480
+      ],
+      "id": "f439ede5-478f-4cd4-9ee8-5566b01f3966",
+      "name": "structura_resp"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = items[0].json;\n\nconst textContent = item.output[0].content[0].text;\nconst content = JSON.parse(textContent);\n\nconst { proveedor, factura, productos, totales } = content;\n\n// El LLM a veces devuelve nombre_fantasia dentro de proveedor\n// y otras veces como proveedor_nombre_fantasia en el mismo nivel.\n// Este fallback cubre ambos casos.\nconst nombreFantasia = proveedor.nombre_fantasia \n  ?? proveedor.proveedor_nombre_fantasia \n  ?? '';\n\nreturn productos.map(p => ({\n  json: {\n    proveedor_nombre:          proveedor.nombre,\n    proveedor_nombre_fantasia: nombreFantasia,\n    proveedor_cuit:            proveedor.cuit_rut_nit,\n    factura_numero:            factura.numero,\n    factura_fecha:             factura.fecha,\n    factura_tipo:              factura.tipo,\n    producto_codigo:           p.codigo,\n    producto_descripcion:      p.descripcion,\n    cantidad:                  p.cantidad,\n    precio_unitario:           p.precio_unitario,\n    descuento:                 p.descuento,\n    precio_total:              p.precio_total,\n    subtotal_factura:          totales.subtotal,\n    impuestos_factura:         totales.impuestos,\n    total_factura:             totales.total\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        240
+      ],
+      "id": "0e8cf634-f1d2-40ed-bdf1-26534cb654b9",
+      "name": "structura_resp1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://dfchatwoot.sistemadistribuidorafenix.com/api/v1/accounts/6/conversations/{{ $('When Executed by Another Workflow').item.json.conversation_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=Se comenzo a procesar la factura, esto puede tardar unos minutos"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        96
+      ],
+      "id": "bc841e06-c7b2-4e27-ab13-e6e319f8324d",
+      "name": "Enviar texto1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8axkredDPrH0GK0e",
+          "name": "chatwoot_stock"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('When Executed by Another Workflow').item.json.lote_tipo }}",
+                    "rightValue": "concodigo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f42a8545-6b6b-4b7b-a00e-aac197dbbbfa"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4442e0da-5b7e-4f25-bdfd-3a43412465ee",
+                    "leftValue": "={{ $('When Executed by Another Workflow').item.json.lote_tipo }}",
+                    "rightValue": "sincodigo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        1168,
+        480
+      ],
+      "id": "75d6c6aa-d040-4705-832f-46fed84dbbd7",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2176,
+        1056
+      ],
+      "id": "0062fc0b-460d-404c-a120-6f903b414ae9",
+      "name": "Loop Over Items3"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 892,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8545,
+              "fieldValue": "={{ Date.now() }}"
+            },
+            {
+              "fieldId": 8554,
+              "fieldValue": "={{ $json.Proveedor }}"
+            },
+            {
+              "fieldId": 8548,
+              "fieldValue": "21"
+            },
+            {
+              "fieldId": 8551,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8563,
+              "fieldValue": "SIMPLE"
+            },
+            {
+              "fieldId": 8667,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.producto_descripcion }}"
+            },
+            {
+              "fieldId": 8566,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.producto_descripcion }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        1232
+      ],
+      "id": "fad29777-86be-4467-a6ba-ef9a07cbb07d",
+      "name": "insert_product_DUX1",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 899,
+        "limit": 1,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8644,
+                "operator": "contains",
+                "value": "={{ $json.proveedor_nombre_fantasia || 1 }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        2432,
+        1232
+      ],
+      "id": "3c62636d-4a42-456f-8cc8-89361831743c",
+      "name": "busca_proveedor1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 896,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8586,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.factura_numero }}"
+            },
+            {
+              "fieldId": 8587,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.factura_tipo }}"
+            },
+            {
+              "fieldId": 8590,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.factura_fecha }}"
+            },
+            {
+              "fieldId": 8589,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.factura_fecha }}"
+            },
+            {
+              "fieldId": 8588,
+              "fieldValue": "={{ $('busca_proveedor1').item.json.ID || \"\" }}"
+            },
+            {
+              "fieldId": 8596,
+              "fieldValue": "={{ $json.CODIGO }}"
+            },
+            {
+              "fieldId": 8599,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8600,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.precio_unitario }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        2864,
+        1232
+      ],
+      "id": "478dd099-4363-4c47-997e-0020ae39135c",
+      "name": "agrega_compra1",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 895,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8582,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8584,
+              "fieldValue": "INGRESO"
+            },
+            {
+              "fieldId": 8579,
+              "fieldValue": "={{ $('insert_product_DUX1').item.json.CODIGO }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        3296,
+        1232
+      ],
+      "id": "68b6d97c-70f8-414f-85a0-03143de409be",
+      "name": "agregar_stock_dux1",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 891,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8490,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8477,
+              "fieldValue": "={{ $('insert_product_DUX1').item.json.CODIGO }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        1232
+      ],
+      "id": "b332c89a-9d24-4429-8116-af0b938844e0",
+      "name": "crear_producto_woocomerce",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://dfchatwoot.sistemadistribuidorafenix.com/api/v1/accounts/6/conversations/{{ $('When Executed by Another Workflow').first().json.conversation_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=Se registro la factura correctamente puedes proceder a cargar los productos en el mismo orden en el que vienen en la factura."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2432,
+        1040
+      ],
+      "id": "e7c1d824-4760-4971-aa3c-c2f1e6e49293",
+      "name": "Enviar texto",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8axkredDPrH0GK0e",
+          "name": "chatwoot_stock"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 889,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8464,
+              "fieldValue": "={{ $('insert_product_DUX1').item.json.CODIGO }}"
+            },
+            {
+              "fieldId": 8677,
+              "fieldValue": "=abierto"
+            },
+            {
+              "fieldId": 8699,
+              "fieldValue": "sincodigo"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        3520,
+        1232
+      ],
+      "id": "6df8e0a3-6169-4eed-bb8f-7f799dfbe519",
+      "name": "agregar_registro_interno",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "phoneNumberId": "1169611772892016",
+        "recipientPhoneNumber": "={{ $json.phone_number }}",
+        "message": "=El codigo: {{ $json.sku_sin_coincidencia }} no se encontro en la factura  por favor revisa y envia el correcto para continuar con el registro.",
+        "responseType": "freeText",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        512
+      ],
+      "id": "8ca8c3af-ced3-4088-8af4-e0001f304c02",
+      "name": "consulta_usuario",
+      "webhookId": "be2677ec-db3d-41c8-b361-82dc8a5d1d54",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "4K7SCrJix7ZmSRub",
+          "name": "WhatsApp account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "recoge_imagenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extrae_info": {
+      "main": [
+        [
+          {
+            "node": "structura_resp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_img": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "recoge_imagenes": {
+      "main": [
+        [
+          {
+            "node": "delete_img",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "pdf?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pdf?": {
+      "main": [
+        [
+          {
+            "node": "changeLink2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "extrae_info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "structura_resp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "changeLink2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "structura_resp": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "structura_resp1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items3": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "busca_proveedor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert_product_DUX1": {
+      "main": [
+        [
+          {
+            "node": "agrega_compra1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca_proveedor1": {
+      "main": [
+        [
+          {
+            "node": "insert_product_DUX1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agrega_compra1": {
+      "main": [
+        [
+          {
+            "node": "crear_producto_woocomerce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agregar_stock_dux1": {
+      "main": [
+        [
+          {
+            "node": "agregar_registro_interno",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "crear_producto_woocomerce": {
+      "main": [
+        [
+          {
+            "node": "agregar_stock_dux1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agregar_registro_interno": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "phone_number": "+56937351536",
+          "conversation_id": 4,
+          "lote_tipo": "manuscrito"
+        }
+      }
+    ],
+    "Message a model": [
+      {
+        "json": {
+          "output": [
+            {
+              "id": "msg_08a6cc17acf6e79a006a567f5f64e08195ae0b06e8e7243108",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "{\n  \"proveedor\": {\n    \"nombre\": \"\",\n    \"proveedor_nombre_fantasia\": \"\",\n    \"cuit_rut_nit\": \"\",\n    \"tipo_documento\": \"\",\n    \"direccion\": \"\",\n    \"telefono\": \"\",\n    \"email\": \"\"\n  },\n  \"factura\": {\n    \"numero\": \"X-0021745\",\n    \"fecha\": \"04-02-2025\",\n    \"tipo\": \"comprobante_de_venta\",\n    \"moneda\": \"\"\n  },\n  \"productos\": [\n    {\n      \"descripcion\": \"PARLANTES\",\n      \"codigo\": \"\",\n      \"cantidad\": 1500,\n      \"unidad\": \"unidad\",\n      \"precio_unitario\": 560,\n      \"descuento\": 0,\n      \"precio_total\": 840000\n    },\n    {\n      \"descripcion\": \"BLANCOS\",\n      \"codigo\": \"\",\n      \"cantidad\": 780,\n      \"unidad\": \"unidad\",\n      \"precio_unitario\": 560,\n      \"descuento\": 0,\n      \"precio_total\": 436800\n    },\n    {\n      \"descripcion\": \"FRANELES\",\n      \"codigo\": \"\",\n      \"cantidad\": 720,\n      \"unidad\": \"unidad\",\n      \"precio_unitario\": 600,\n      \"descuento\": 0,\n      \"precio_total\": 432000\n    },\n    {\n      \"descripcion\": \"GUANTES MOT.\",\n      \"codigo\": \"\",\n      \"cantidad\": 360,\n      \"unidad\": \"unidad\",\n      \"precio_unitario\": 595,\n      \"descuento\": 0,\n      \"precio_total\": 214200\n    },\n    {\n      \"descripcion\": \"DATOS NSO\",\n      \"codigo\": \"\",\n      \"cantidad\": 300,\n      \"unidad\": \"unidad\",\n      \"precio_unitario\": 520,\n      \"descuento\": 0,\n      \"precio_total\": 156000\n    },\n    {\n      \"descripcion\": \"LE\u00d1A. GARDEN\",\n      \"codigo\": \"\",\n      \"cantidad\": 360,\n      \"unidad\": \"unidad\",\n      \"precio_unitario\": 1080,\n      \"descuento\": 0,\n      \"precio_total\": 388800\n    }\n  ],\n  \"totales\": {\n    \"subtotal\": 2528600,\n    \"descuento_total\": 0,\n    \"impuestos\": 0,\n    \"total\": 2528600\n  }\n}"
+                }
+              ],
+              "role": "assistant"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "versionId": "4e86150d-f9d3-4f92-b045-4a135aed8efb",
+  "versionCounter": 8,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-16T18:28:31.216Z",
+      "createdAt": "2026-03-16T18:28:31.216Z",
+      "role": "workflow:owner",
+      "workflowId": "Fco2AQEuXeOpJKtE",
+      "projectId": "vVzAcavWmnOrBRhn",
+      "project": {
+        "updatedAt": "2025-05-25T03:25:33.967Z",
+        "createdAt": "2025-05-25T03:15:57.388Z",
+        "id": "vVzAcavWmnOrBRhn",
+        "name": "Sabrina Tomasello <distribuidorafenixlocal@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "updatedAt": "2025-05-25T03:15:57.388Z",
+            "createdAt": "2025-05-25T03:15:57.388Z",
+            "userId": "addd7f0c-39d6-40ce-8867-eeedd4b680e8",
+            "projectId": "vVzAcavWmnOrBRhn",
+            "user": {
+              "updatedAt": "2026-07-14T03:01:34.574Z",
+              "createdAt": "2025-05-25T03:15:48.746Z",
+              "id": "addd7f0c-39d6-40ce-8867-eeedd4b680e8",
+              "email": "distribuidorafenixlocal@gmail.com",
+              "firstName": "Sabrina",
+              "lastName": "Tomasello",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-05-25T03:25:58.753Z",
+                "personalization_survey_n8n_version": "1.93.0",
+                "companySize": "20-99",
+                "companyType": "ecommerce",
+                "role": "business-owner",
+                "reportedSource": "friend"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "aUmKsFDa6EnSDvfa",
+                "userActivatedAt": 1761795994787,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1783861199194
+                },
+                "dismissedCallouts": {
+                  "aiAgentStarterCallout": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-14",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": []
+}

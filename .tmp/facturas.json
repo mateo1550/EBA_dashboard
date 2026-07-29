@@ -1,0 +1,2767 @@
+{
+  "updatedAt": "2026-07-14T18:19:00.600Z",
+  "createdAt": "2026-04-23T19:19:10.729Z",
+  "id": "30V5z1wm6oWbkyqB",
+  "name": "facturas",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "phone_number"
+            },
+            {
+              "name": "conversation_id",
+              "type": "number"
+            },
+            {
+              "name": "lote_tipo"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2256,
+        96
+      ],
+      "id": "e7dc3b20-3301-49c6-8d75-fca18a1d06e0",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/gemini-3-pro/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 8eee2a0b38dd8ffbb8ed664952074823"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"Analiz\u00e1 esta factura y extra\u00e9 la informaci\u00f3n en formato JSON estricto, sin texto adicional, sin bloques de c\u00f3digo markdown.\\n\\nDevolv\u00e9 exactamente esta estructura:\\n\\n{\\n  \\\"proveedor\\\": {\\n    \\\"nombre\\\": \\\"\\\",\\n    \\\"proveedor_nombre_fantasia\\\": \\\"\\\",\\n    \\\"cuit_rut_nit\\\": \\\"\\\",\\n    \\\"tipo_documento\\\": \\\"\\\",\\n    \\\"direccion\\\": \\\"\\\",\\n    \\\"telefono\\\": \\\"\\\",\\n    \\\"email\\\": \\\"\\\"\\n  },\\n  \\\"factura\\\": {\\n    \\\"numero\\\": \\\"\\\",\\n    \\\"fecha\\\": \\\"\\\",\\n    \\\"tipo\\\": \\\"\\\",\\n    \\\"moneda\\\": \\\"\\\"\\n  },\\n  \\\"productos\\\": [\\n    {\\n      \\\"descripcion\\\": \\\"\\\",\\n      \\\"codigo\\\": \\\"\\\",\\n      \\\"cantidad\\\": 0,\\n      \\\"unidad\\\": \\\"\\\",\\n      \\\"precio_unitario\\\": 0,\\n      \\\"descuento\\\": 0,\\n      \\\"precio_total\\\": 0\\n    }\\n  ],\\n  \\\"totales\\\": {\\n    \\\"subtotal\\\": 0,\\n    \\\"descuento_total\\\": 0,\\n    \\\"impuestos\\\": 0,\\n    \\\"total\\\": 0\\n  }\\n}\\n\\nReglas:\\n- Si un campo no existe en la factura, dejalo como string vac\u00edo \\\"\\\" o 0 seg\u00fan el tipo.\\n- El campo tipo_documento indica si es CUIT, RUT, NIT, RFC u otro identificador fiscal.\\n- Los valores num\u00e9ricos deben ser n\u00fameros, no strings.\\n- Si hay varios impuestos (IVA, percepciones, etc.), sumalos todos en el campo impuestos.\\n- No inventes datos que no est\u00e9n visibles en la imagen.\\n- El campo proveedor_nombre_fantasia es el nombre del proveedor sin siglas legales ni formas societarias. Elimin\u00e1 cualquier t\u00e9rmino como S.R.L., S.A., S.A.S., S.C., LTDA., INC., CORP., CIA., y equivalentes, incluyendo sus variantes con o sin puntos. Conserv\u00e1 \u00fanicamente el nombre o palabras que identifican al negocio. Ejemplos: \\\"MATEG S.R.L.\\\" \u2192 \\\"MATEG\\\" | \\\"ALIMENTOS VICTORIA S.A.\\\" \u2192 \\\"ALIMENTOS VICTORIA\\\" | \\\"MEGAMIX DISTRIBUIDOR SRL\\\" \u2192 \\\"MEGAMIX DISTRIBUIDOR\\\".\\n\\nRegla del campo numero:\\nBusc\u00e1 la letra identificatoria del comprobante, que suele aparecer dentro de un c\u00edrculo o recuadro destacado cerca del encabezado (ej. \\\"A\\\", \\\"B\\\", \\\"C\\\", \\\"M\\\", \\\"X\\\"), a veces junto a un c\u00f3digo como \\\"Cod. 01\\\". Si encontr\u00e1s esa letra, anteponela al n\u00famero del comprobante separada por un guion, formato LETRA-NUMERO. Ejemplo: letra \\\"A\\\" y n\u00famero \\\"00003-00030392\\\" \u2192 \\\"numero\\\": \\\"A-00003-00030392\\\". Si el documento no tiene letra identificatoria visible, dej\u00e1 el campo numero solo con el n\u00famero, sin prefijo. No inventes la letra si no est\u00e1 claramente visible.\\n\\nRegla del campo tipo:\\nEl campo tipo indica \u00fanicamente si el documento es una Factura letra A o no. Si el encabezado dice \\\"FACTURA\\\" y la letra identificatoria del comprobante (la misma que us\u00e1s para el prefijo de numero) es \\\"A\\\", el valor debe ser \\\"Factura\\\". En cualquier otro caso \u2014 Factura B, Factura C, Remito, Nota de Cr\u00e9dito, Nota de D\u00e9bito, Ticket, o cualquier otro comprobante \u2014 el valor debe ser \\\"comprobante_de_venta\\\". Si no pod\u00e9s determinar con certeza la letra o el tipo de documento, us\u00e1 \\\"comprobante_de_venta\\\" por defecto. Nunca asumas \\\"Factura\\\" si no est\u00e1s segura de que la letra es A.\\n\\nRegla del campo fecha:\\nExtra\u00e9 la fecha de emisi\u00f3n del comprobante (no fechas de vencimiento de CAE u otras). Devolv\u00e9 siempre la fecha en formato DD-MM-YYYY, sin importar c\u00f3mo est\u00e9 escrita en el documento (con barras, espacios o guiones). El d\u00eda y el mes deben tener siempre 2 d\u00edgitos, con cero a la izquierda si corresponde. Ejemplo: 5/1/26 \u2192 \\\"05-01-2026\\\". Si el a\u00f1o tiene solo 2 d\u00edgitos, expandilo a 4 d\u00edgitos asumiendo el siglo 2000. Ejemplo: 27/05/26 \u2192 \\\"27-05-2026\\\". Si la fecha no es legible o no est\u00e1 presente, dej\u00e1 el campo como string vac\u00edo.\\n\\nRegla de bultos:\\nCuando la cantidad est\u00e9 expresada en bultos, cajas, packs u otra unidad de agrupaci\u00f3n, calcul\u00e1 la cantidad total en unidades individuales antes de retornarla. Identific\u00e1 cu\u00e1ntas unidades trae cada bulto (ese dato suele estar en la descripci\u00f3n o como \\\"x12\\\", \\\"por 6 u.\\\", etc.), multiplic\u00e1 bultos por unidades por bulto y retorn\u00e1 el resultado en el campo cantidad. Us\u00e1 \\\"unidad\\\" en el campo unidad. Ejemplo: 2 bultos x 12 unidades \u2192 \\\"cantidad\\\": 24, \\\"unidad\\\": \\\"unidad\\\". Caso especial: si al pie o en cualquier parte del documento aparece una referencia global del tipo BULTOS 4, BULTOS 4 (CUATRO) o similar, multiplic\u00e1 la cantidad de cada producto por ese n\u00famero y retorn\u00e1 el resultado en el campo cantidad. Ejemplo: BULTOS 4 con cantidad 50 \u2192 cantidad: 200.\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"{{ $json.propertyName[0] }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"stream\": false\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1216,
+        176
+      ],
+      "id": "c29a9a66-9618-49c8-a35c-8358ddc55c89",
+      "name": "extrae_info"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('When Executed by Another Workflow').item.json.phone_number }}factura"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        -208
+      ],
+      "id": "34806203-95f3-4629-960d-c56c32e31d3a",
+      "name": "delete_img",
+      "credentials": {
+        "redis": {
+          "id": "oN28XQrwti8IINl5",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $('When Executed by Another Workflow').item.json.phone_number }}factura",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1728,
+        96
+      ],
+      "id": "254d996c-2787-4468-b3d0-6b8bdbfa3469",
+      "name": "recoge_imagenes",
+      "credentials": {
+        "redis": {
+          "id": "oN28XQrwti8IINl5",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        288,
+        -96
+      ],
+      "id": "1204018a-9438-4073-a129-a07b45a510ff",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 892,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8545,
+              "fieldValue": "={{ $('captura_codigo1').item.json.CODIGO }}"
+            },
+            {
+              "fieldId": 8564,
+              "fieldValue": "={{ $json['Descripci\u00f3n corta'] }}"
+            },
+            {
+              "fieldId": 8554,
+              "fieldValue": "={{ $('busca_proveedor').item.json.Proveedor }}"
+            },
+            {
+              "fieldId": 8548,
+              "fieldValue": "21"
+            },
+            {
+              "fieldId": 8551,
+              "fieldValue": "={{ $('Loop Over Items').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8547,
+              "fieldValue": "={{ $json.Nombre }}"
+            },
+            {
+              "fieldId": 8563,
+              "fieldValue": "SIMPLE"
+            },
+            {
+              "fieldId": 8546,
+              "fieldValue": "={{ $json['GTIN, UPC, EAN o ISBN'] }}"
+            },
+            {
+              "fieldId": 8667,
+              "fieldValue": "={{ $('Loop Over Items').item.json.producto_descripcion }}"
+            },
+            {
+              "fieldId": 8552,
+              "fieldValue": "={{ $('busca_rubro').item.json.rubro || '' }}"
+            },
+            {
+              "fieldId": 8553,
+              "fieldValue": "={{ $('busca_rubro').item.json.subrubro === 'no_definido' ? '' : $('busca_rubro').item.json.subrubro }}"
+            },
+            {
+              "fieldId": 8566,
+              "fieldValue": "={{ $('captura_codigo1').item.json.CODIGO }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        224
+      ],
+      "id": "47e1793b-4600-4fe4-add3-94220f37d312",
+      "name": "insert_product_DUX",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 891,
+        "limit": 10,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8477,
+                "value": "={{ $('captura_codigo1').item.json.CODIGO }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        224
+      ],
+      "id": "e2c5f16e-a1bd-47be-a160-2cdf56e0f7f8",
+      "name": "obtener_producto_woocomerce",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "databaseId": 177,
+        "tableId": 891,
+        "rowId": "={{ $('obtener_producto_woocomerce').item.json.id }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8490,
+              "fieldValue": "={{ $('Loop Over Items').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8502,
+              "fieldValue": "={{ $('insert_product_DUX').item.json.RUBRO }}  {{ \">\" + $('insert_product_DUX').item.json[\"SUB RUBRO\"] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        224
+      ],
+      "id": "078551ab-9867-4918-afb6-695853c15133",
+      "name": "actualizar_stock_woocomerce",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e79d4098-a9d4-4ead-b44a-23bc9fa09832",
+              "leftValue": "={{ $json.propertyName[0] }}",
+              "rightValue": ".pdf",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1520,
+        96
+      ],
+      "id": "53909008-0320-44f0-b7bb-13c12954e15e",
+      "name": "pdf?"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.audioUrl }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1024,
+        -64
+      ],
+      "id": "f69211f1-98e2-48cc-ac44-c7aa42d6f758",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "responses": {
+          "values": [
+            {
+              "type": "file",
+              "fileType": "base64",
+              "fileName": "text"
+            },
+            {
+              "role": "system",
+              "content": "=## Rol y Objetivo\n\nSos un extractor de datos de documentos comerciales.\nRecib\u00eds la imagen de una factura y tu \u00fanica tarea es devolver un JSON estricto con la informaci\u00f3n extra\u00edda.\nNo respondas nada m\u00e1s. No expliques nada. No uses bloques de c\u00f3digo markdown. Solo devolv\u00e9 el JSON.\n\n---\n\n## Estructura de respuesta obligatoria\n\nDevolv\u00e9 exactamente esta estructura, respetando los tipos de datos indicados:\n\n{\n  \"proveedor\": {\n    \"nombre\": \"\",\n    \"proveedor_nombre_fantasia\": \"\",\n    \"cuit_rut_nit\": \"\",\n    \"tipo_documento\": \"\",\n    \"direccion\": \"\",\n    \"telefono\": \"\",\n    \"email\": \"\"\n  },\n  \"factura\": {\n    \"numero\": \"\",\n    \"fecha\": \"\",\n    \"tipo\": \"\",\n    \"moneda\": \"\"\n  },\n  \"productos\": [\n    {\n      \"descripcion\": \"\",\n      \"codigo\": \"\",\n      \"cantidad\": 0,\n      \"unidad\": \"\",\n      \"precio_unitario\": 0,\n      \"descuento\": 0,\n      \"precio_total\": 0\n    }\n  ],\n  \"totales\": {\n    \"subtotal\": 0,\n    \"descuento_total\": 0,\n    \"impuestos\": 0,\n    \"total\": 0\n  }\n}\n\n---\n\n## Reglas de extracci\u00f3n\n\n- Extra\u00e9 \u00fanicamente los datos que est\u00e9n visibles en la imagen. No inventes ni infer\u00e1s informaci\u00f3n ausente.\n- Si un campo no existe en la factura, dej\u00e1 el valor como string vac\u00edo `\"\"` o como `0` seg\u00fan el tipo de dato del campo.\n- Los valores num\u00e9ricos deben ser n\u00fameros, no strings.\n- El campo `tipo_documento` indica el identificador fiscal del proveedor: CUIT, RUT, NIT, RFC u otro equivalente seg\u00fan el pa\u00eds.\n- Si la factura tiene varios impuestos (IVA, percepciones, retenciones, etc.), sumalos todos en el campo `impuestos`.\n- Si hay m\u00faltiples productos, inclu\u00ed un objeto por cada \u00edtem dentro del array `productos`.\n- El campo `proveedor_nombre_fantasia` corresponde al nombre comercial del proveedor sin siglas ni clasificaciones jur\u00eddicas. Elimin\u00e1 t\u00e9rminos como S.A., S.R.L., S.A.S., LTDA., S.C., E.I.R.L., S.A. de C.V., LLC, INC., CORP., y cualquier equivalente en cualquier idioma o pa\u00eds. Tambi\u00e9n elimin\u00e1 palabras completas como \"SOCIEDAD\", \"ANONIMA\", \"LIMITADA\", \"EMPRESA\", \"COMPA\u00d1IA\", \"COMERCIAL\", \"INDUSTRIAL\" cuando aparezcan al final del nombre como parte de la clasificaci\u00f3n jur\u00eddica. El resultado debe ser \u00fanicamente el nombre principal con el que se identifica comercialmente el proveedor.\n\n### Regla del campo `numero`\n\n- Busc\u00e1 la letra identificatoria del comprobante: suele aparecer dentro de un c\u00edrculo o recuadro destacado cerca del encabezado (ej. \"A\", \"B\", \"C\", \"M\", \"X\"), a veces acompa\u00f1ada de un c\u00f3digo como \"Cod. 01\".\n- Si encontr\u00e1s esa letra, anteponela al n\u00famero del comprobante separada por un guion, con el formato: `LETRA-NUMERO`. Ejemplo: si la letra es \"A\" y el n\u00famero es \"00003-00030392\", el campo `numero` debe quedar como `\"A-00003-00030392\"`.\n- Si el documento no tiene una letra identificatoria visible (por ejemplo, un remito sin clasificaci\u00f3n fiscal A/B/C), dej\u00e1 el campo `numero` solo con el n\u00famero, sin prefijo.\n- No inventes la letra si no est\u00e1 claramente visible en la imagen.\n\n### Regla del campo `tipo`\n\n- El campo `tipo` indica \u00fanicamente si el documento es una **Factura letra A** o no.\n- Si el encabezado dice \"FACTURA\" **y** la letra identificatoria del comprobante (la misma que us\u00e1s para el prefijo de `numero`) es **\"A\"** \u2192 el valor debe ser `\"Factura\"`.\n- En cualquier otro caso \u2014 Factura B, Factura C, Remito, Nota de Cr\u00e9dito, Nota de D\u00e9bito, Ticket, o cualquier otro comprobante \u2014 el valor debe ser `\"comprobante_de_venta\"`.\n- Si no pod\u00e9s determinar con certeza la letra o el tipo de documento, us\u00e1 `\"comprobante_de_venta\"` por defecto. Nunca asumas `\"Factura\"` si no est\u00e1s segura de que la letra es \"A\".\n\n### Regla del campo `fecha`\n\n- Extra\u00e9 la fecha del comprobante (la fecha de emisi\u00f3n, no fechas de vencimiento de CAE u otras).\n- Devolv\u00e9 siempre la fecha en formato `DD-MM-YYYY`, sin importar c\u00f3mo est\u00e9 escrita en el documento (con `/`, con espacios, con guiones, etc.).\n- El d\u00eda y el mes deben tener siempre 2 d\u00edgitos (con cero a la izquierda si corresponde). Ejemplo: `5/1/26` \u2192 `\"05-01-2026\"`.\n- Si el a\u00f1o en el documento tiene solo 2 d\u00edgitos, expandilo a 4 d\u00edgitos asumiendo el siglo 2000. Ejemplo: `27/05/26` \u2192 `\"27-05-2026\"`.\n- No inventes la fecha si no es legible o no est\u00e1 presente; en ese caso dej\u00e1 el campo como string vac\u00edo `\"\"`.\n\n---\n\n## Regla de interpretaci\u00f3n de bultos\n\nCuando la cantidad en la factura est\u00e9 expresada en bultos, cajas, packs u otra unidad de agrupaci\u00f3n, deb\u00e9s calcular la cantidad total en unidades individuales antes de retornarla.\n\nPara hacerlo:\n- Identific\u00e1 cu\u00e1ntas unidades trae cada bulto (este dato suele aparecer en la descripci\u00f3n del producto, en una columna de contenido por bulto, o como \"x12\", \"x6\", \"por 12 u.\", etc.).\n- Multiplic\u00e1 la cantidad de bultos por las unidades por bulto.\n- Retorn\u00e1 el resultado en el campo `cantidad` como n\u00famero entero de unidades.\n- En el campo `unidad` indic\u00e1 \"unidad\" (no \"bulto\" ni \"caja\").\n\nEjemplo: si la factura dice 2 bultos de cobijas con 12 unidades por bulto \u2192 `\"cantidad\": 24`, `\"unidad\": \"unidad\"`.\n\n- Caso especial \u2014 bultos globales del remito: si al pie o en cualquier parte del documento aparece una referencia global del tipo \"BULTOS 4\", \"BULTOS 4 (CUATRO)\" o similar, ese n\u00famero indica que todas las cantidades de todos los productos deben multiplicarse por ese valor. Aplic\u00e1 la multiplicaci\u00f3n a cada producto por separado y retorn\u00e1 las cantidades ya calculadas en unidades. Ejemplo: si dice \"BULTOS 4\" y un producto tiene cantidad 50, retorn\u00e1 `\"cantidad\": 200`."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        -64
+      ],
+      "id": "f3f62673-2b09-48bc-88ad-8f41ab613f60",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZeagSVvuyp06h0Np",
+          "name": "OpenAi Sabri account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lee el data_url crudo desde el input (puede venir como /rails/active_storage... o con alg\u00fan prefijo inv\u00e1lido)\nconst rawUrl =$input.first().json.propertyName[0];\n\n// Busca la parte desde /rails/active_storage...\nconst index = rawUrl.indexOf('/rails/active_storage');\nconst path = rawUrl.slice(index);\n\n// Arma la URL absoluta con el prefijo correcto\nconst prefijo = 'https://dfchatwoot.sistemadistribuidorafenix.com/';\nconst finalUrl = prefijo + path;\n\n// Devuelve la nueva URL en el output para usar en el siguiente nodo\nreturn [\n  {\n    json: {\n      audioUrl: finalUrl\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1216,
+        -64
+      ],
+      "id": "b48890a9-1b56-444c-914a-791ddb87ce1e",
+      "name": "changeLink2"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2096,
+        224
+      ],
+      "id": "9bcd9d69-637f-42d1-8db4-7c60d86716b3",
+      "name": "Wait",
+      "webhookId": "d4324619-de77-44b6-83f4-dd5c3e3b5116"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 895,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8579,
+              "fieldValue": "={{ $json.CODIGO }}"
+            },
+            {
+              "fieldId": 8582,
+              "fieldValue": "={{ $('Loop Over Items').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8584,
+              "fieldValue": "INGRESO"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        224
+      ],
+      "id": "3b444be9-c50d-4ef7-9635-6c9f3b63aba0",
+      "name": "agregar_stock_dux",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtener los datos de n8n de forma segura\nconst itemData = items[0].json;\n\n// Funci\u00f3n helper: limpia bloques de markdown (```json ... ``` o ``` ... ```)\n// antes de intentar parsear como JSON.\nfunction limpiarYParsear(raw) {\n  if (typeof raw !== 'string') return raw;\n\n  let limpio = raw.trim();\n\n  // Si viene envuelto en bloque de c\u00f3digo markdown, lo removemos\n  if (limpio.startsWith('```')) {\n    limpio = limpio\n      .replace(/^```[a-zA-Z]*\\n?/, '') // saca la apertura ```json o ```\n      .replace(/```$/, '')             // saca el cierre ```\n      .trim();\n  }\n\n  return JSON.parse(limpio);\n}\n\ntry {\n  let content;\n\n  // 2. Extraer el contenido del mensaje seg\u00fan la estructura del input.txt\n  if (itemData.choices && itemData.choices[0] && itemData.choices[0].message) {\n    const rawContent = itemData.choices[0].message.content;\n    content = limpiarYParsear(rawContent);\n  } else if (itemData.data) {\n    // Por si viene envuelto en una propiedad 'data'\n    const rawData = typeof itemData.data === 'string' ? JSON.parse(itemData.data) : itemData.data;\n    const rawContent = rawData.choices[0].message.content;\n    content = limpiarYParsear(rawContent);\n  } else {\n    throw new Error(\"No se encontr\u00f3 la estructura esperada de la IA (choices.message.content).\");\n  }\n\n  // 3. Desestructurar los datos validados\n  const { proveedor, factura, productos, totales } = content;\n\n  // 4. Mapear y normalizar cada producto al formato de salida de n8n\n  return productos.map(p => ({\n    json: {\n      proveedor_nombre:          proveedor?.nombre || null,\n      proveedor_nombre_fantasia: proveedor?.proveedor_nombre_fantasia || null,\n      proveedor_cuit:            proveedor?.cuit_rut_nit || null,\n      factura_numero:            factura?.numero || null,\n      factura_fecha:             factura?.fecha || null,\n      factura_tipo:              factura?.tipo || null,\n      producto_codigo:           p.codigo || null,\n      producto_descripcion:      p.descripcion || null,\n      cantidad:                  Number(p.cantidad) || 0,\n      precio_unitario:           Number(p.precio_unitario) || 0,\n      descuento:                 Number(p.descuento) || 0,\n      precio_total:              Number(p.precio_total) || 0,\n      subtotal_factura:          totales?.subtotal || 0,\n      impuestos_factura:         totales?.impuestos || 0,\n      total_factura:             totales?.total || 0\n    }\n  }));\n\n} catch (error) {\n  // En caso de error, devuelve un objeto con el detalle en lugar de romper el flujo\n  return [{\n    json: {\n      error: true,\n      message: error.message\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        176
+      ],
+      "id": "ad469c9a-d8df-4a62-a448-df3bff7ca07f",
+      "name": "structura_resp"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = items[0].json;\n\nconst textContent = item.output[0].content[0].text;\nconst content = JSON.parse(textContent);\n\nconst { proveedor, factura, productos, totales } = content;\n\n// El LLM a veces devuelve nombre_fantasia dentro de proveedor\n// y otras veces como proveedor_nombre_fantasia en el mismo nivel.\n// Este fallback cubre ambos casos.\nconst nombreFantasia = proveedor.nombre_fantasia \n  ?? proveedor.proveedor_nombre_fantasia \n  ?? '';\n\nreturn productos.map(p => ({\n  json: {\n    proveedor_nombre:          proveedor.nombre,\n    proveedor_nombre_fantasia: nombreFantasia,\n    proveedor_cuit:            proveedor.cuit_rut_nit,\n    factura_numero:            factura.numero,\n    factura_fecha:             factura.fecha,\n    factura_tipo:              factura.tipo,\n    producto_codigo:           p.codigo,\n    producto_descripcion:      p.descripcion,\n    cantidad:                  p.cantidad,\n    precio_unitario:           p.precio_unitario,\n    descuento:                 p.descuento,\n    precio_total:              p.precio_total,\n    subtotal_factura:          totales.subtotal,\n    impuestos_factura:         totales.impuestos,\n    total_factura:             totales.total\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        -64
+      ],
+      "id": "a7511381-8716-4e78-9939-5840509745f6",
+      "name": "structura_resp1"
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 899,
+        "limit": 1,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8644,
+                "operator": "contains",
+                "value": "={{ $('Loop Over Items').item.json.proveedor_nombre_fantasia || 1 }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        768,
+        224
+      ],
+      "id": "1b8ccad5-8b87-45cc-9b42-93166cfc1002",
+      "name": "busca_proveedor",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 896,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8586,
+              "fieldValue": "={{ $('Loop Over Items').item.json.factura_numero }}"
+            },
+            {
+              "fieldId": 8587,
+              "fieldValue": "={{ $('Loop Over Items').item.json.factura_tipo }}"
+            },
+            {
+              "fieldId": 8590,
+              "fieldValue": "={{ $('Loop Over Items').item.json.factura_fecha }}"
+            },
+            {
+              "fieldId": 8589,
+              "fieldValue": "={{ $('Loop Over Items').item.json.factura_fecha }}"
+            },
+            {
+              "fieldId": 8588,
+              "fieldValue": "={{ $('busca_proveedor').item.json.ID || \"\" }}"
+            },
+            {
+              "fieldId": 8596,
+              "fieldValue": "={{ $('captura_codigo1').item.json.CODIGO }}"
+            },
+            {
+              "fieldId": 8599,
+              "fieldValue": "={{ $('Loop Over Items').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8600,
+              "fieldValue": "={{ $('Loop Over Items').item.json.precio_unitario }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        2496,
+        224
+      ],
+      "id": "abb68b2e-fcbc-42a3-b13d-262af59ce666",
+      "name": "agrega_compra",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0fbbd465-0083-4bdd-b50e-d81224dcaea6",
+              "name": "productos_dux",
+              "value": "={{ $('insert_product_DUX').item.json}}",
+              "type": "object"
+            },
+            {
+              "id": "4ffe1410-7264-4c7e-8546-0c2d4a892ace",
+              "name": "stock_dux",
+              "value": "={{ $('agregar_stock_dux').item.json }}",
+              "type": "object"
+            },
+            {
+              "id": "26afa8fe-8850-4424-bea6-bd99243ccc6a",
+              "name": "=planilla_woocomerce",
+              "value": "={{ $('actualizar_stock_woocomerce').item.json }}",
+              "type": "object"
+            },
+            {
+              "id": "b295ed19-3496-4e66-9254-3ab1a4131647",
+              "name": "planilla_factura",
+              "value": "={{$json}}",
+              "type": "object"
+            },
+            {
+              "id": "94352d32-b580-48f4-85cc-44365db9db1d",
+              "name": "=planilla_precio",
+              "value": "={{ $('planilla_precio').item.json}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2688,
+        224
+      ],
+      "id": "1e46f664-b232-4b4b-a7da-a65bacbe0822",
+      "name": "agrupa_info"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -320
+      ],
+      "id": "7b91eb9f-12fd-429c-8652-c466a5367867",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst allData = items[0].json.data;\n\nconst EXCLUDED = ['id', 'order'];\n\nfunction cleanRow(row) {\n  return Object.fromEntries(\n    Object.entries(row).filter(([k]) => !EXCLUDED.includes(k))\n  );\n}\n\nconst planillas = {\n  productos_dux: [],\n  stock_dux: [],\n  planilla_woocomerce: [],\n  planilla_factura: [],\n  planilla_precio: []\n};\n\nfor (const entry of allData) {\n  if (entry.productos_dux && Object.keys(entry.productos_dux).length > 0)\n    planillas.productos_dux.push(cleanRow(entry.productos_dux));\n\n  if (entry.stock_dux && Object.keys(entry.stock_dux).length > 0)\n    planillas.stock_dux.push(cleanRow(entry.stock_dux));\n\n  if (entry.planilla_woocomerce && Object.keys(entry.planilla_woocomerce).length > 0)\n    planillas.planilla_woocomerce.push(cleanRow(entry.planilla_woocomerce));\n\n  if (entry.planilla_factura && Object.keys(entry.planilla_factura).length > 0)\n    planillas.planilla_factura.push(cleanRow(entry.planilla_factura));\n\n  if (entry.planilla_precio && Object.keys(entry.planilla_precio).length > 0)\n    planillas.planilla_precio.push(cleanRow(entry.planilla_precio));\n}\n\nreturn Object.entries(planillas)\n  .filter(([, rows]) => rows.length > 0)\n  .map(([name, rows]) => ({\n    json: { planilla: name, content: rows }\n  }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        -320
+      ],
+      "id": "f522970b-15ab-4285-89da-2ba33e83945e",
+      "name": "crea_planillas"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1008,
+        -176
+      ],
+      "id": "f8f0f523-6398-4925-ae5a-c27a35be3d14",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2176,
+        -176
+      ],
+      "id": "ab117a91-6824-47f5-9855-1fab6fd62e68",
+      "name": "Wait1",
+      "webhookId": "8eb67903-80b5-45d6-ba1c-b5d7302441ca"
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1424,
+        -320
+      ],
+      "id": "cf0222e3-69b9-44a1-80a8-90510c244532",
+      "name": "Wait2",
+      "webhookId": "46fabdd6-f3a6-4342-ba6f-e717d90213bb",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "258aad09-b1f4-4829-9d54-2910744e6fc6",
+              "name": "respuesta",
+              "value": "documentos procesados correctamente y enviados a el usuario",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1872,
+        -320
+      ],
+      "id": "973825f4-88d0-4c1b-9894-a6e3354ea4f8",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://dfchatwoot.sistemadistribuidorafenix.com/api/v1/accounts/6/conversations/{{ $('When Executed by Another Workflow').item.json.conversation_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message_type",
+              "value": "outgoing"
+            },
+            {
+              "name": "private",
+              "value": "false"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "attachments[]",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1968,
+        -176
+      ],
+      "id": "b5d64ba0-560e-40a9-9aca-e0d8c06b34d1",
+      "name": "enviar_planilla",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8axkredDPrH0GK0e",
+          "name": "chatwoot_stock"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "xls",
+        "binaryPropertyName": "=data",
+        "options": {
+          "fileName": "={{ $('Loop Over Items1').item.json.planilla }}.xls"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        -176
+      ],
+      "id": "f7590fe6-b76e-4cdc-a8bc-8a464d8d14a4",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 889,
+        "limit": 1,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8464,
+                "value": "={{ $json.CODIGO }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        224
+      ],
+      "id": "aec67564-d083-43c7-a797-4b926c84b379",
+      "name": "busca_rubro",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 900,
+        "limit": 1,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8664,
+                "value": "={{ $('captura_codigo1').item.json.CODIGO }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        2304,
+        224
+      ],
+      "id": "63026fb9-8cdf-41a1-82cf-ac6d2869003a",
+      "name": "planilla_precio",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.item.json.content.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        -160
+      ],
+      "id": "40bad109-30ab-4f8c-8050-5fec8894f18c",
+      "name": "prepara_filas"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://dfchatwoot.sistemadistribuidorafenix.com/api/v1/accounts/6/conversations/{{ $('When Executed by Another Workflow').item.json.conversation_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=Se comenzo a procesar la factura, esto puede tardar unos minutos"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1344,
+        -208
+      ],
+      "id": "a2076a27-8f61-441e-83f4-207b4f34706c",
+      "name": "Enviar texto1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8axkredDPrH0GK0e",
+          "name": "chatwoot_stock"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 902,
+        "limit": 1,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8679,
+                "value": "={{ $('Loop Over Items').item.json.producto_codigo }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        336,
+        240
+      ],
+      "id": "77564871-94d6-407a-92e2-3ebe59b2d56c",
+      "name": "compara_sku_BD",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d599fbd2-cc87-4648-a849-2f37e95bda6f",
+              "leftValue": "={{ $json.order }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        240
+      ],
+      "id": "0ebcea78-53f1-4c9a-a1d5-b4da092682cb",
+      "name": "existe?"
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 902,
+        "limit": 1,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8679,
+                "value": "={{ $json.CODIGO }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        432
+      ],
+      "id": "788d7abd-7406-4070-81ce-6d40108d6be8",
+      "name": "compara_r_sku_BD",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const codigo = $input.first().json.CODIGO;\n\nconst match = codigo.match(/^(r+)-/);\n\nlet nuevoCodigo;\nif (match) {\n  const rs = match[1] + 'r';\n  nuevoCodigo = rs + '-' + codigo.slice(match[0].length);\n} else {\n  nuevoCodigo = 'r-' + codigo;\n}\n\nreturn [{ json: { CODIGO: nuevoCodigo } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        432
+      ],
+      "id": "76a599de-3e24-4911-91b9-ee9a106ee9de",
+      "name": "itera_revision"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6bd777b2-131b-4f2a-9d1b-bbe32c60b0b2",
+              "leftValue": "={{ $json[\"COD BARRA\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1376,
+        432
+      ],
+      "id": "aac33458-a94f-4488-85a4-40dbfffacf40",
+      "name": "existe"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dbd5f6fb-5476-4d1e-9b1a-1bbf9425864c",
+              "name": "CODIGO",
+              "value": "={{ $json[\"COD BARRA\"] ? $('compara_sku_BD').item.json.CODIGO : $('compara_sku_BD').item.json.CODIGO }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        432
+      ],
+      "id": "8b4bc1af-f2ef-4d1d-8a91-39426ced6a30",
+      "name": "captura_codigo"
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 889,
+        "limit": 100,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8677,
+                "value": "abierto"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        112,
+        -656
+      ],
+      "id": "6c054cfe-d307-42e3-89e4-2ccbfd2fec43",
+      "name": "trae_ultimo_lote",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -656
+      ],
+      "id": "255a4333-732a-44cf-aff0-0fd1f7187fde",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Todos los SKUs registrados en BD (un item por SKU)\nconst skusRegistrados = $input.all().map(item => String(item.json.SKU));\n// Limpiar prefijos r- solo para comparaci\u00f3n\nconst skusLimpios = skusRegistrados.map(sku => sku.replace(/^r+-/, ''));\n// C\u00f3digos extra\u00eddos de la factura\nconst productosFactura = $('Aggregate1').first().json.data;\nconst codigosFactura = productosFactura.map(p => String(p.producto_codigo));\n// Buscar SKUs registrados que no tienen coincidencia en la factura\n// Usa el \u00edndice para devolver el SKU original (con r- si lo ten\u00eda)\nconst noCoinciden = skusRegistrados.filter((sku, i) => !codigosFactura.includes(skusLimpios[i]));\n\n// Si hay diferencias, mapeamos cada una a un \u00edtem individual de n8n\nif (noCoinciden.length > 0) {\n  return noCoinciden.map(sku => ({\n    json: {\n      result: 'diferente',\n      sku_sin_coincidencia: sku\n    }\n  }));\n}\n\n// Si todo coincide, se devuelve un \u00fanico \u00edtem indic\u00e1ndolo\nreturn [{\n  json: {\n    result: 'coinciden',\n    sku_sin_coincidencia: null\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -656
+      ],
+      "id": "2e27fb5b-7e8c-41a7-9217-a20b6561df48",
+      "name": "compara_codigos"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -608,
+        -464
+      ],
+      "id": "0ef8f74d-91b8-4f54-8cd2-51065061a9c4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3a372c88-5a7b-4b99-a1b0-47290ef9bf46",
+              "leftValue": "={{ $json.result }}",
+              "rightValue": "diferente",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        -656
+      ],
+      "id": "113d1d1b-cf44-4a7e-a90f-bf243595f337",
+      "name": "es_diferente?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        960,
+        -752
+      ],
+      "id": "1a396c83-3666-47fe-aeec-6e39f3eb52fa",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "caf213e4-0624-4fc7-85e7-da1db0e2ad09",
+              "name": "sku_sin_coincidencia",
+              "value": "={{ $json.sku_sin_coincidencia }}",
+              "type": "string"
+            },
+            {
+              "id": "317f2061-befd-443b-9e4f-68412516fbbd",
+              "name": "phone_number",
+              "value": "={{ $('When Executed by Another Workflow').first().json.phone_number }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        736,
+        -752
+      ],
+      "id": "daef5e39-6d35-4f2c-921f-07fb8bb194ef",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "phoneNumberId": "1169611772892016",
+        "recipientPhoneNumber": "={{ $json.phone_number }}",
+        "message": "=El codigo: {{ $json.sku_sin_coincidencia }} no se encontro en la factura  por favor revisa y envia el correcto para continuar con el registro.",
+        "responseType": "freeText",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        -624
+      ],
+      "id": "4ffb7b98-276a-4f41-bd43-0143730c9352",
+      "name": "consulta_usuario",
+      "webhookId": "be2677ec-db3d-41c8-b361-82dc8a5d1d54",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "4K7SCrJix7ZmSRub",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 891,
+        "limit": 1,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8477,
+                "value": "={{ $('Loop Over Items2').item.json.sku_sin_coincidencia }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        -624
+      ],
+      "id": "5f6883fe-8b0b-4344-b1d5-f2d47b2ff848",
+      "name": "busca_woocomerce",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 889,
+        "limit": 1,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8464,
+                "value": "={{ $('Loop Over Items2').item.json.sku_sin_coincidencia }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        -624
+      ],
+      "id": "c5ee77c0-c597-4eb4-aa1f-4fd24e0b4750",
+      "name": "busca_registro_interno",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 900,
+        "limit": 1,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8664,
+                "value": "={{ $('Loop Over Items2').item.json.sku_sin_coincidencia }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        -624
+      ],
+      "id": "d225ed27-592a-4591-b50d-7408d36045da",
+      "name": "busca_precio",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "databaseId": 177,
+        "tableId": 891,
+        "rowId": "={{ $json.id }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8477,
+              "fieldValue": "={{ $('consulta_usuario').item.json.data.text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        -624
+      ],
+      "id": "d476032f-a825-49cd-9740-9eef629d9f0e",
+      "name": "actualiza_woocomerce",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "databaseId": 177,
+        "tableId": 889,
+        "rowId": "={{ $json.id }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8464,
+              "fieldValue": "={{ $('consulta_usuario').item.json.data.text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        -624
+      ],
+      "id": "227f4aae-366f-4e54-94aa-e405077b1b82",
+      "name": "actualiza_registro_interno",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "databaseId": 177,
+        "tableId": 900,
+        "rowId": "={{ $json.id }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8664,
+              "fieldValue": "={{ $('consulta_usuario').item.json.data.text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        2384,
+        -624
+      ],
+      "id": "ce08c960-319e-4f12-bca5-e17f3323dbb8",
+      "name": "actualiza_planilla_precio",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "sXxUtIs6NpvnWG0g",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/sXxUtIs6NpvnWG0g",
+          "cachedResultName": "cerrar_lotes"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1664,
+        -432
+      ],
+      "id": "a44bbcde-04ef-4c8e-b1b6-c7d38297510c",
+      "name": "Call 'cerrar_lotes'"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d1ee678d-22cc-459a-92d7-e021bb0a095f",
+              "leftValue": "={{ $('Loop Over Items1').item.json.planilla }}",
+              "rightValue": "planilla_woocomerce",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1424,
+        -160
+      ],
+      "id": "be8311ee-c389-4b41-bcf7-855b2a438a9c",
+      "name": "xls?"
+    },
+    {
+      "parameters": {
+        "options": {
+          "fileName": "={{ $('Loop Over Items1').item.json.planilla }}.csv"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        0
+      ],
+      "id": "26f7616c-5706-43fd-8694-eb4fc48cd049",
+      "name": "Convert to csv"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Nodo: Resolver C\u00f3digo (robusto) ===\n// Modo de ejecuci\u00f3n requerido: \"Run Once for Each Item\"\n\nlet codigo = null;\n\n// 1) Intentamos tomar el CODIGO desde 'itera_revision' para ESTE \u00edtem puntual.\n//    Si itera_revision no corri\u00f3 para este \u00edtem (o no hay pairedItem resoluble),\n//    el acceso tira error y caemos al catch.\ntry {\n  const valorRevision = $('itera_revision').item.json.CODIGO;\n\n  if (valorRevision !== undefined && valorRevision !== null && String(valorRevision).trim() !== '') {\n    codigo = valorRevision;\n  }\n} catch (error) {\n  // No hay dato de itera_revision para este \u00edtem puntual, seguimos al fallback\n  codigo = null;\n}\n\n// 2) Fallback: si no conseguimos nada de itera_revision, usamos producto_codigo del Loop Over Items\nif (codigo === null) {\n  try {\n    codigo = $('Loop Over Items').item.json.producto_codigo;\n  } catch (error) {\n    codigo = null;\n  }\n}\n\n// 3) Devolvemos SOLO el c\u00f3digo, nada m\u00e1s\nreturn {\n  json: {\n    CODIGO: codigo\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        224
+      ],
+      "id": "d7acc87b-6181-4d65-a550-3371136a5a63",
+      "name": "captura_codigo1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Ag19RfctuN0nGd14",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Ag19RfctuN0nGd14",
+          "cachedResultName": "dashboard"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        32
+      ],
+      "id": "122a25e1-7445-4c52-bbbf-adb392421789",
+      "name": "Execute Workflow",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "77dc44f5-a850-44e2-914b-9684b8c36fc7",
+              "name": "tool",
+              "value": "factura",
+              "type": "string"
+            },
+            {
+              "id": "ad601c64-ec6d-44a1-98f8-3c2361e0d204",
+              "name": "data[0].planilla_factura.COMPROBANTE",
+              "value": "={{ $json.data[0].planilla_factura.COMPROBANTE }}",
+              "type": "string"
+            },
+            {
+              "id": "e1087e20-d5a3-4106-be3a-c15ccde557c6",
+              "name": "data[0].planilla_factura[\"TIPO COMPROBANTE\"]",
+              "value": "={{ $json.data[0].planilla_factura[\"TIPO COMPROBANTE\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "a056c72e-8309-4d8d-b979-2101795222b9",
+              "name": "data[0].planilla_factura[\"ID PROVEEDOR\"]",
+              "value": "={{ $json.data[0].planilla_factura[\"ID PROVEEDOR\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "65b4213d-8847-4998-bf4f-bfb7f7a235e2",
+              "name": "cantidad",
+              "value": "={{ $('structura_resp').first().json.cantidad }}",
+              "type": "string"
+            },
+            {
+              "id": "c1c740ce-91ba-4079-a4d3-2df18a4564c1",
+              "name": "proveedor_nombre",
+              "value": "={{ $('structura_resp').first().json.proveedor_nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "56168335-3b73-4104-831f-b0d94fa37350",
+              "name": "propertyName[0]",
+              "value": "={{ $('recoge_imagenes').first().json.propertyName[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        32
+      ],
+      "id": "fb90de9e-06f0-4780-a525-c2d04a35ddbe",
+      "name": "info_dashboard"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('When Executed by Another Workflow').item.json.lote_tipo }}",
+                    "rightValue": "concodigo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f42a8545-6b6b-4b7b-a00e-aac197dbbbfa"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4442e0da-5b7e-4f25-bdfd-3a43412465ee",
+                    "leftValue": "={{ $('When Executed by Another Workflow').item.json.lote_tipo }}",
+                    "rightValue": "sincodigo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -96,
+        176
+      ],
+      "id": "85b7e0ab-6dad-4a1d-bd93-b2379a52f3d9",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        320,
+        832
+      ],
+      "id": "604cbc98-2239-4b3c-bd04-679fe8b1755b",
+      "name": "Loop Over Items3"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 892,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8545,
+              "fieldValue": "={{ Date.now() }}"
+            },
+            {
+              "fieldId": 8554,
+              "fieldValue": "={{ $json.Proveedor }}"
+            },
+            {
+              "fieldId": 8548,
+              "fieldValue": "21"
+            },
+            {
+              "fieldId": 8551,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8563,
+              "fieldValue": "SIMPLE"
+            },
+            {
+              "fieldId": 8667,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.producto_descripcion }}"
+            },
+            {
+              "fieldId": 8566,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.producto_descripcion }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        816,
+        1008
+      ],
+      "id": "95d84449-2794-47d6-97f4-19bcbd5abad1",
+      "name": "insert_product_DUX1",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "databaseId": 177,
+        "tableId": 899,
+        "limit": 1,
+        "additionalOptions": {
+          "filters": {
+            "fields": [
+              {
+                "field": 8644,
+                "operator": "contains",
+                "value": "={{ $json.proveedor_nombre_fantasia || 1 }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        576,
+        1008
+      ],
+      "id": "f8d3a803-02fd-4cd4-9791-f3651a3b7571",
+      "name": "busca_proveedor1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 896,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8586,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.factura_numero }}"
+            },
+            {
+              "fieldId": 8587,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.factura_tipo }}"
+            },
+            {
+              "fieldId": 8590,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.factura_fecha }}"
+            },
+            {
+              "fieldId": 8589,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.factura_fecha }}"
+            },
+            {
+              "fieldId": 8588,
+              "fieldValue": "={{ $('busca_proveedor1').item.json.ID || \"\" }}"
+            },
+            {
+              "fieldId": 8596,
+              "fieldValue": "={{ $json.CODIGO }}"
+            },
+            {
+              "fieldId": 8599,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8600,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.precio_unitario }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        1008
+      ],
+      "id": "7054feb9-3540-42b3-a9d3-dc03a42ad688",
+      "name": "agrega_compra1",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 895,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8582,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8584,
+              "fieldValue": "INGRESO"
+            },
+            {
+              "fieldId": 8579,
+              "fieldValue": "={{ $('insert_product_DUX1').item.json.CODIGO }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        1008
+      ],
+      "id": "873d74af-4a75-4b94-b595-13d2b01b1da0",
+      "name": "agregar_stock_dux1",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 891,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8490,
+              "fieldValue": "={{ $('Loop Over Items3').item.json.cantidad }}"
+            },
+            {
+              "fieldId": 8477,
+              "fieldValue": "={{ $('insert_product_DUX1').item.json.CODIGO }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        1008
+      ],
+      "id": "f302bb99-50a4-4bbe-b673-0925a13b28cf",
+      "name": "crear_producto_woocomerce",
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://dfchatwoot.sistemadistribuidorafenix.com/api/v1/accounts/6/conversations/{{ $('When Executed by Another Workflow').first().json.conversation_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=Se registro la factura correctamente puedes proceder a cargar los productos en el mismo orden en el que vienen en la factura."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        816
+      ],
+      "id": "6c81eefc-466d-443f-bbf1-d30b21f8454c",
+      "name": "Enviar texto",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8axkredDPrH0GK0e",
+          "name": "chatwoot_stock"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 177,
+        "tableId": 889,
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 8464,
+              "fieldValue": "={{ $('insert_product_DUX1').item.json.CODIGO }}"
+            },
+            {
+              "fieldId": 8677,
+              "fieldValue": "=abierto"
+            },
+            {
+              "fieldId": 8699,
+              "fieldValue": "sincodigo"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        1008
+      ],
+      "id": "440b389e-4903-4e7a-a9d7-7daf2172019c",
+      "name": "agregar_registro_interno",
+      "credentials": {
+        "baserowApi": {
+          "id": "CDye7BrQhbD3X4Bg",
+          "name": "Baserow account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        []
+      ]
+    },
+    "extrae_info": {
+      "main": [
+        [
+          {
+            "node": "structura_resp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "recoge_imagenes": {
+      "main": [
+        [
+          {
+            "node": "delete_img",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "pdf?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "compara_sku_BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert_product_DUX": {
+      "main": [
+        [
+          {
+            "node": "agregar_stock_dux",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "obtener_producto_woocomerce": {
+      "main": [
+        [
+          {
+            "node": "insert_product_DUX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "actualizar_stock_woocomerce": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pdf?": {
+      "main": [
+        [
+          {
+            "node": "changeLink2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "extrae_info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "changeLink2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "structura_resp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "planilla_precio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agregar_stock_dux": {
+      "main": [
+        [
+          {
+            "node": "actualizar_stock_woocomerce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "structura_resp": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "structura_resp1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca_proveedor": {
+      "main": [
+        [
+          {
+            "node": "captura_codigo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agrupa_info": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agrega_compra": {
+      "main": [
+        [
+          {
+            "node": "agrupa_info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "info_dashboard",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "crea_planillas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "crea_planillas": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "prepara_filas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Call 'cerrar_lotes'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "enviar_planilla": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        []
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "enviar_planilla",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca_rubro": {
+      "main": [
+        [
+          {
+            "node": "obtener_producto_woocomerce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "planilla_precio": {
+      "main": [
+        [
+          {
+            "node": "agrega_compra",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prepara_filas": {
+      "main": [
+        [
+          {
+            "node": "xls?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_img": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "compara_sku_BD": {
+      "main": [
+        [
+          {
+            "node": "existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "existe?": {
+      "main": [
+        [
+          {
+            "node": "busca_proveedor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "captura_codigo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "compara_r_sku_BD": {
+      "main": [
+        [
+          {
+            "node": "existe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "itera_revision": {
+      "main": [
+        [
+          {
+            "node": "compara_r_sku_BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "existe": {
+      "main": [
+        [
+          {
+            "node": "busca_proveedor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "captura_codigo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "captura_codigo": {
+      "main": [
+        [
+          {
+            "node": "itera_revision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "trae_ultimo_lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "trae_ultimo_lote": {
+      "main": [
+        [
+          {
+            "node": "compara_codigos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "compara_codigos": {
+      "main": [
+        [
+          {
+            "node": "es_diferente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "es_diferente?": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "consulta_usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consulta_usuario": {
+      "main": [
+        [
+          {
+            "node": "busca_woocomerce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca_woocomerce": {
+      "main": [
+        [
+          {
+            "node": "actualiza_woocomerce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca_registro_interno": {
+      "main": [
+        [
+          {
+            "node": "actualiza_registro_interno",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca_precio": {
+      "main": [
+        [
+          {
+            "node": "actualiza_planilla_precio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "actualiza_woocomerce": {
+      "main": [
+        [
+          {
+            "node": "busca_registro_interno",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "actualiza_registro_interno": {
+      "main": [
+        [
+          {
+            "node": "busca_precio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "actualiza_planilla_precio": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'cerrar_lotes'": {
+      "main": [
+        []
+      ]
+    },
+    "xls?": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to csv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to csv": {
+      "main": [
+        [
+          {
+            "node": "enviar_planilla",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "captura_codigo1": {
+      "main": [
+        [
+          {
+            "node": "busca_rubro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "info_dashboard": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "compara_sku_BD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items3": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "busca_proveedor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "busca_proveedor1": {
+      "main": [
+        [
+          {
+            "node": "insert_product_DUX1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert_product_DUX1": {
+      "main": [
+        [
+          {
+            "node": "agrega_compra1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agrega_compra1": {
+      "main": [
+        [
+          {
+            "node": "crear_producto_woocomerce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agregar_stock_dux1": {
+      "main": [
+        [
+          {
+            "node": "agregar_registro_interno",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "crear_producto_woocomerce": {
+      "main": [
+        [
+          {
+            "node": "agregar_stock_dux1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agregar_registro_interno": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2026-07-03T00:00:47.021-03:00",
+          "Readable date": "July 3rd 2026, 12:00:47 am",
+          "Readable time": "12:00:47 am",
+          "Day of week": "Friday",
+          "Year": "2026",
+          "Month": "July",
+          "Day of month": "03",
+          "Hour": "00",
+          "Minute": "00",
+          "Second": "47",
+          "Timezone": "America/Argentina/Buenos_Aires (UTC-03:00)"
+        }
+      }
+    ],
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "phone_number": "+56937351536",
+          "conversation_id": 4,
+          "lote_tipo": "sincodigo"
+        }
+      }
+    ]
+  },
+  "versionId": "afd8b636-f4eb-4f7f-90ea-ae1f7da4ba76",
+  "versionCounter": 115,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-23T19:19:10.729Z",
+      "createdAt": "2026-04-23T19:19:10.729Z",
+      "role": "workflow:owner",
+      "workflowId": "30V5z1wm6oWbkyqB",
+      "projectId": "vVzAcavWmnOrBRhn",
+      "project": {
+        "updatedAt": "2025-05-25T03:25:33.967Z",
+        "createdAt": "2025-05-25T03:15:57.388Z",
+        "id": "vVzAcavWmnOrBRhn",
+        "name": "Sabrina Tomasello <distribuidorafenixlocal@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "updatedAt": "2025-05-25T03:15:57.388Z",
+            "createdAt": "2025-05-25T03:15:57.388Z",
+            "userId": "addd7f0c-39d6-40ce-8867-eeedd4b680e8",
+            "projectId": "vVzAcavWmnOrBRhn",
+            "user": {
+              "updatedAt": "2026-07-14T03:01:34.574Z",
+              "createdAt": "2025-05-25T03:15:48.746Z",
+              "id": "addd7f0c-39d6-40ce-8867-eeedd4b680e8",
+              "email": "distribuidorafenixlocal@gmail.com",
+              "firstName": "Sabrina",
+              "lastName": "Tomasello",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-05-25T03:25:58.753Z",
+                "personalization_survey_n8n_version": "1.93.0",
+                "companySize": "20-99",
+                "companyType": "ecommerce",
+                "role": "business-owner",
+                "reportedSource": "friend"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "aUmKsFDa6EnSDvfa",
+                "userActivatedAt": 1761795994787,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1783861199194
+                },
+                "dismissedCallouts": {
+                  "aiAgentStarterCallout": true
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-14",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-05-27T19:51:39.592Z",
+      "createdAt": "2025-05-27T19:51:39.592Z",
+      "id": "oAJk2IMU7rLGGSeK",
+      "name": "Tool"
+    }
+  ]
+}

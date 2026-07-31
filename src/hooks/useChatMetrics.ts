@@ -40,6 +40,7 @@ export interface DepartmentMetricItem {
 
 export interface ChatMetrics {
   totalConsultas: number;
+  historicoLeadsAtendidos: number;
   
   // Clientes vs Leads
   clientesCount: number;
@@ -90,7 +91,8 @@ export function useChatMetrics(selectedMonth: Date = new Date()) {
 
       const [
         { data: chatData, error: chatError },
-        { data: responseTimesData, error: responseTimesError }
+        { data: responseTimesData, error: responseTimesError },
+        { count: historicoLeadsAtendidos, error: historicoLeadsError }
       ] = await Promise.all([
         supabase
           .from('data_dashboard')
@@ -101,7 +103,11 @@ export function useChatMetrics(selectedMonth: Date = new Date()) {
           .from('seguimiento_tiempos_respuesta')
           .select('*')
           .gte('derivado_en', inicio)
-          .lte('derivado_en', fin)
+          .lte('derivado_en', fin),
+        supabase
+          .from('data_dashboard')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_client', false)
       ]);
 
       if (chatError) {
@@ -109,6 +115,9 @@ export function useChatMetrics(selectedMonth: Date = new Date()) {
       }
       if (responseTimesError) {
         throw new Error(responseTimesError.message);
+      }
+      if (historicoLeadsError) {
+        throw new Error(historicoLeadsError.message);
       }
 
       const interactions = (chatData || []) as ChatInteraction[];
@@ -300,6 +309,7 @@ export function useChatMetrics(selectedMonth: Date = new Date()) {
 
       return {
         totalConsultas,
+        historicoLeadsAtendidos: historicoLeadsAtendidos || 0,
         clientesCount,
         leadsCount,
         noDefinidoCount,

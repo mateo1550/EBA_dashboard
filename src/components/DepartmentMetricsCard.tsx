@@ -20,7 +20,15 @@ export function DepartmentMetricsCard({ data }: DepartmentMetricsCardProps) {
       const seconds = Math.round(timeInMinutes * 60);
       return `${seconds} seg`;
     }
-    return `${timeInMinutes.toFixed(1)} min`;
+    if (timeInMinutes < 60) {
+      return `${timeInMinutes.toFixed(1)} min`;
+    }
+    if (timeInMinutes < 1440) {
+      const hours = timeInMinutes / 60;
+      return `${hours.toFixed(1)} hs`;
+    }
+    const days = timeInMinutes / 1440;
+    return `${days.toFixed(1)} d`;
   };
 
   const getBadgeStyles = (timeInMinutes: number | null): string => {

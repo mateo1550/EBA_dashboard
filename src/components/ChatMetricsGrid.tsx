@@ -35,7 +35,7 @@ export function ChatMetricsGrid({ data, isLoading, mesActual }: ChatMetricsGridP
 
   return (
     <div className="grid grid-cols-1 min-[1300px]:grid-cols-2 gap-6 w-full max-w-7xl mx-auto pb-4">
-      <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 md:p-7 flex flex-col gap-5 w-full min-w-0 overflow-x-auto">
+      <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 md:p-7 flex flex-col gap-5 w-full min-w-0">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">Interacciones</h2>
@@ -46,36 +46,36 @@ export function ChatMetricsGrid({ data, isLoading, mesActual }: ChatMetricsGridP
           </span>
         </div>
 
-        <div className="flex min-w-[560px] flex-row items-stretch gap-4">
-          <div className="bg-primary/10 text-primary rounded-2xl px-6 py-6 md:px-7 md:py-7 flex flex-col justify-between w-[300px] flex-shrink-0 min-h-[226px]">
+        <div className="flex flex-col sm:flex-row items-stretch gap-4 w-full min-w-0">
+          <div className="bg-primary/10 text-primary rounded-2xl px-6 py-6 md:px-7 md:py-7 flex flex-col justify-between sm:flex-1 min-w-0 min-h-[180px]">
             <div>
               <span className="block text-lg font-body font-semibold">Consultas</span>
               <span className="block text-sm opacity-75 font-normal mt-1">Totales recibidas</span>
             </div>
-            <span className="block text-7xl leading-none mt-6 font-display font-bold tracking-tight">
+            <span className="block text-6xl md:text-7xl leading-none mt-6 font-display font-bold tracking-tight">
               {data.totalConsultas}
             </span>
           </div>
 
-          <div className="flex flex-col gap-4 w-[200px] flex-shrink-0">
-            <div className="bg-secondary/30 rounded-2xl p-5 min-h-[106px] flex items-center gap-3">
-              <div className="shrink-0 rounded-full bg-white/70 p-2.5">
-                <Bot className="w-5 h-5 text-[#4DD0E1]" />
+          <div className="flex flex-row sm:flex-col gap-4 sm:flex-1 min-w-0">
+            <div className="bg-secondary/30 rounded-2xl p-5 flex-1 min-w-0 flex items-center gap-3">
+              <div className="shrink-0 rounded-full bg-white/70 p-3">
+                <Bot className="w-6 h-6 text-[#4DD0E1]" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0">
                 <span className="text-base text-muted-foreground font-body leading-none">Mateo</span>
-                <span className="text-4xl font-display font-bold mt-1 text-[#4DD0E1] leading-none">
+                <span className="text-5xl font-display font-bold mt-1 text-[#4DD0E1] leading-none">
                   {data.aiCount}
                 </span>
               </div>
             </div>
-            <div className="bg-secondary/30 rounded-2xl p-5 min-h-[106px] flex items-center gap-3">
-              <div className="shrink-0 rounded-full bg-white/70 p-2.5">
-                <Users className="w-5 h-5 text-[#64B5F6]" />
+            <div className="bg-secondary/30 rounded-2xl p-5 flex-1 min-w-0 flex items-center gap-3">
+              <div className="shrink-0 rounded-full bg-white/70 p-3">
+                <Users className="w-6 h-6 text-[#64B5F6]" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0">
                 <span className="text-base text-muted-foreground font-body leading-none">Humanos</span>
-                <span className="text-4xl font-display font-bold mt-1 text-[#64B5F6] leading-none">
+                <span className="text-5xl font-display font-bold mt-1 text-[#64B5F6] leading-none">
                   {data.humanCount}
                 </span>
               </div>

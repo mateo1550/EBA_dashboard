@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   dashboard:
     image: dashboard-eba:latest
@@ -8,18 +6,14 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     networks:
-      - traefik-public
+      - ebanet
     labels:
       - "traefik.enable=true"
-      # Enrutamiento basado en el subdominio
-      - "traefik.http.routers.ebadashboard.rule=Host(`dashboard.agenteeba.online`)"
-      # Entrypoint HTTPS (asegúrate de que en tu Traefik se llame 'websecure')
+      - "traefik.http.routers.ebadashboard.rule=Host(`app-metricas.agenteeba.online`)"
       - "traefik.http.routers.ebadashboard.entrypoints=websecure"
-      # Configuración del resolver SSL (asegúrate de que en tu Traefik se llame 'letsencrypt' o 'production')
-      - "traefik.http.routers.ebadashboard.tls.certresolver=letsencrypt"
-      # Puerto interno del contenedor (Nginx corre en el 80)
+      - "traefik.http.routers.ebadashboard.tls.certresolver=letsencryptresolver"
       - "traefik.http.services.ebadashboard.loadbalancer.server.port=80"
 
 networks:
-  traefik-public:
+  ebanet:
     external: true

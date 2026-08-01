@@ -4,15 +4,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: unless-stopped
     networks:
       - ebanet
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.ebadashboard.rule=Host(`app-metricas.agenteeba.online`)"
-      - "traefik.http.routers.ebadashboard.entrypoints=websecure"
-      - "traefik.http.routers.ebadashboard.tls.certresolver=letsencryptresolver"
-      - "traefik.http.services.ebadashboard.loadbalancer.server.port=80"
+    deploy:
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.ebadashboard.rule=Host(`app-metricas.agenteeba.online`)"
+        - "traefik.http.routers.ebadashboard.entrypoints=websecure"
+        - "traefik.http.routers.ebadashboard.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.ebadashboard.loadbalancer.server.port=80"
 
 networks:
   ebanet:

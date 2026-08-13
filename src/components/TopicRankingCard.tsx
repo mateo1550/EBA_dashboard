@@ -1,4 +1,6 @@
 
+import { MetricInfoTooltip } from "./MetricInfoTooltip";
+
 interface TopicRankingItem {
   topic: string;
   count: number;
@@ -28,7 +30,10 @@ export function TopicRankingCard({ topicRanking }: TopicRankingCardProps) {
   return (
     <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col gap-6 w-full h-full">
       {/* Header */}
-      <div>
+      <div className="relative">
+        <div className="absolute right-0 top-0">
+          <MetricInfoTooltip content="Ranking de los temas consultados con mayor frecuencia durante el periodo seleccionado." />
+        </div>
         <h3 className="text-xl font-display font-bold text-foreground mb-1">Tópicos Más Consultados</h3>
         <p className="text-sm text-muted-foreground font-body">Ranking de temas de consulta a Mateo</p>
       </div>

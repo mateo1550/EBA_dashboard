@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { startOfMonth, endOfMonth, format, parseISO, nextFriday, previousSaturday, isSaturday, getDaysInMonth } from 'date-fns';
+import { eachDayOfInterval, format, parseISO, nextFriday, previousSaturday, isSaturday } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getPeriodQueryKey, getPeriodRange, type PeriodFilter } from '@/lib/period';
 
 export interface Pago {
   id: number;
@@ -40,12 +41,13 @@ export interface PagosMetrics {
   diasVolumen: { dia: string; count: number }[];
 }
 
-export function usePagos(selectedMonth: Date = new Date()) {
+export function usePagos(selectedDate: Date = new Date(), period: PeriodFilter = 'month') {
   return useQuery({
-    queryKey: ['pagos', format(selectedMonth, 'yyyy-MM')],
+    queryKey: ['pagos', getPeriodQueryKey(selectedDate, period)],
     queryFn: async (): Promise<PagosMetrics> => {
-      const inicio = format(startOfMonth(selectedMonth), 'yyyy-MM-dd');
-      const fin = format(endOfMonth(selectedMonth), 'yyyy-MM-dd');
+      const periodRange = getPeriodRange(selectedDate, period);
+      const inicio = format(periodRange.start, 'yyyy-MM-dd');
+      const fin = format(periodRange.end, 'yyyy-MM-dd');
 
       const [
         { data, error },
@@ -161,25 +163,24 @@ export function usePagos(selectedMonth: Date = new Date()) {
       const datosSemanales = Array.from(semanasMap.values()).sort((a, b) => a.id.localeCompare(b.id));
 
       // Calcular volumen por día del mes
-      const daysInMonth = getDaysInMonth(selectedMonth);
-      const diasMesMap = new Map<number, number>();
-      for (let i = 1; i <= daysInMonth; i++) {
-        diasMesMap.set(i, 0);
-      }
+      const daysInPeriod = eachDayOfInterval(periodRange);
+      const diasMesMap = new Map<string, number>();
+      daysInPeriod.forEach(day => {
+        const key = period === 'year' ? format(day, 'yyyy-MM') : format(day, 'yyyy-MM-dd');
+        if (!diasMesMap.has(key)) diasMesMap.set(key, 0);
+      });
       
       pagos.forEach(pago => {
         if (pago.fecha) {
-          // parseISO interpreta la fecha correctamente
-          const pagoDate = parseISO(pago.fecha);
-          const dia = pagoDate.getDate(); // 1 a 31
+          const dia = format(parseISO(pago.fecha), period === 'year' ? 'yyyy-MM' : 'yyyy-MM-dd');
           if (diasMesMap.has(dia)) {
             diasMesMap.set(dia, diasMesMap.get(dia)! + 1);
           }
         }
       });
       
-      const diasVolumen = Array.from(diasMesMap.entries()).map(([dia, count]) => ({
-        dia: dia.toString(),
+      const diasVolumen = Array.from(diasMesMap.entries()).map(([dateKey, count]) => ({
+        dia: format(parseISO(period === 'year' ? `${dateKey}-01` : dateKey), period === 'year' ? 'MMM' : period === 'month' ? 'd' : 'dd/MM', { locale: es }),
         count
       }));
 

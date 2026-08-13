@@ -1,6 +1,7 @@
 import type { Pago } from "@/hooks/usePagos";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { MetricInfoTooltip } from "./MetricInfoTooltip";
 
 interface PagosTableProps {
   data: Pago[];
@@ -9,7 +10,10 @@ interface PagosTableProps {
 export function PagosTable({ data }: PagosTableProps) {
   return (
     <div className="bg-card rounded-2xl shadow-sm flex flex-col overflow-hidden">
-      <div className="p-6 border-b border-border">
+      <div className="relative p-6 border-b border-border">
+        <div className="absolute right-6">
+          <MetricInfoTooltip content="Listado de los pagos registrados más recientemente, con su fecha, alumno, tutor, banco, monto y estado." />
+        </div>
         <h3 className="text-lg font-display font-semibold text-foreground">Últimos Pagos Registrados</h3>
       </div>
       <div className="overflow-x-auto thin-scrollbar max-h-[400px] overflow-y-auto">

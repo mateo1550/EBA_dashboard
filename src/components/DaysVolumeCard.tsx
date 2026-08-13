@@ -1,4 +1,5 @@
 import { Bar, BarChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis, CartesianGrid } from "recharts";
+import { MetricInfoTooltip } from "./MetricInfoTooltip";
 
 interface DaysVolumeCardProps {
   diasVolumen: { dia: string; count: number }[];
@@ -8,7 +9,10 @@ export function DaysVolumeCard({ diasVolumen }: DaysVolumeCardProps) {
   return (
     <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col gap-5 w-full mt-6">
       <div className="flex flex-col gap-4">
-        <div>
+          <div className="relative">
+            <div className="absolute right-0 top-0">
+              <MetricInfoTooltip content="Cantidad de pagos registrados para cada día del mes seleccionado." />
+            </div>
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-xl font-display font-bold text-foreground">Volumen por Día del Mes</h2>
           </div>

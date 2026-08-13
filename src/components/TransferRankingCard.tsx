@@ -1,4 +1,5 @@
 import { ShieldAlert, RefreshCw, EyeOff, ClipboardList } from "lucide-react";
+import { MetricInfoTooltip } from "./MetricInfoTooltip";
 
 interface TransferReasonRankingItem {
   reason: string;
@@ -50,7 +51,10 @@ export function TransferRankingCard({
   return (
     <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col gap-6 w-full h-full">
       {/* Header */}
-      <div>
+      <div className="relative">
+        <div className="absolute right-0 top-0">
+          <MetricInfoTooltip content="Cantidad y distribución de las conversaciones que fueron transferidas desde Mateo al equipo humano." />
+        </div>
         <h3 className="text-xl font-display font-bold text-foreground mb-1">Derivaciones a Humanos</h3>
         <p className="text-sm text-muted-foreground font-body">Análisis de transferencias ({derivacionesTotal} en total)</p>
       </div>

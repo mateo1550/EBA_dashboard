@@ -5,10 +5,12 @@ import { WeeklyChart } from "@/components/WeeklyChart";
 import { BankMetrics } from "@/components/BankMetrics";
 import { SummaryCard } from "@/components/SummaryCard";
 import { DaysVolumeCard } from "@/components/DaysVolumeCard";
+import { IntencionPagoCard } from "@/components/IntencionPagoCard";
 import { ChatMetricsGrid } from "@/components/ChatMetricsGrid";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { getPeriodRange, type PeriodFilter } from "@/lib/period";
 import logoGapfixers from "@/assets/logo_gapfixers.png";
 import {
   Wallet,
@@ -17,6 +19,8 @@ import {
   Settings,
   TrendingUp,
   Receipt,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 type ActiveSection = "pagos" | "conversaciones";
@@ -36,6 +40,14 @@ const UNLOCKED_SECTIONS = [
   },
 ];
 
+const MONTH_OPTIONS = Array.from({ length: 12 }, (_, index) => {
+  const date = new Date(2020, index, 1);
+  return {
+    value: String(index + 1).padStart(2, "0"),
+    label: format(date, "MMMM", { locale: es }),
+  };
+});
+
 const SECTION_META: Record<
   ActiveSection,
   { title: string; description: string }
@@ -53,15 +65,20 @@ const SECTION_META: Record<
 
 function App() {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("month");
   const [activeSection, setActiveSection] = useState<ActiveSection>("pagos");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("eba-theme") === "dark";
+  });
 
-  const { data, isLoading, error } = usePagos(selectedMonth);
+  const { data, isLoading, error } = usePagos(selectedMonth, periodFilter);
   const {
     data: chatData,
     isLoading: isChatLoading,
     error: chatError,
-  } = useChatMetrics(selectedMonth);
+  } = useChatMetrics(selectedMonth, periodFilter);
 
   useEffect(() => {
     const syncSidebarState = () => {
@@ -78,14 +95,42 @@ function App() {
     return () => window.removeEventListener("resize", syncSidebarState);
   }, []);
 
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDarkMode);
+    window.localStorage.setItem("eba-theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
+
   const fetchError = error || chatError;
 
-  const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value) {
-      const date = parseISO(`${e.target.value}-01`);
-      setSelectedMonth(date);
-    }
+  const handleToday = () => {
+    setSelectedMonth(new Date());
+    setPeriodFilter("day");
   };
+
+  const handleThisWeek = () => {
+    setSelectedMonth(new Date());
+    setPeriodFilter("week");
+  };
+
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const year = selectedMonth.getFullYear();
+    setSelectedMonth(parseISO(`${year}-${e.target.value}-01`));
+    setPeriodFilter("month");
+  };
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedMonth(new Date(Number(e.target.value), selectedMonth.getMonth(), 1));
+    setPeriodFilter("year");
+  };
+
+  // Kept for the hidden compatibility controls used by older layouts.
+  const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPeriodFilter(e.target.value as PeriodFilter);
+  };
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value) setSelectedMonth(parseISO(e.target.value));
+  };
+  const dateInputValue = format(selectedMonth, "yyyy-MM-dd");
 
   const handleSectionChange = (section: ActiveSection) => {
     setActiveSection(section);
@@ -98,6 +143,14 @@ function App() {
   const selectedMonthLabel = format(selectedMonth, "MMMM yyyy", {
     locale: es,
   });
+  const selectedPeriodRange = getPeriodRange(selectedMonth, periodFilter);
+  const selectedPeriodLabel = periodFilter === "day"
+    ? format(selectedPeriodRange.start, "dd 'de' MMMM yyyy", { locale: es })
+    : periodFilter === "week"
+      ? `Del ${format(selectedPeriodRange.start, "dd MMM", { locale: es })} al ${format(selectedPeriodRange.end, "dd MMM yyyy", { locale: es })}`
+      : periodFilter === "year"
+        ? format(selectedMonth, "yyyy")
+        : selectedMonthLabel;
 
   if (fetchError) {
     return (
@@ -265,16 +318,25 @@ function App() {
 
       <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden max-[900px]:pl-[84px]">
         <header className="bg-card border-b border-border/50 sticky top-0 z-40">
-          <div className="px-8 h-16 flex items-center justify-between gap-8 max-[900px]:px-4 max-[900px]:gap-3">
-            <div>
-              <h1 className="font-display font-bold text-xl tracking-tight text-foreground">
+          <div className="px-8 min-h-16 py-2 flex items-center justify-between gap-8 max-[900px]:flex-wrap max-[900px]:px-4 max-[900px]:gap-2">
+            <div className="min-w-0 flex-1 max-[900px]:w-full max-[900px]:flex-none">
+              <h1 className="font-display font-bold text-xl leading-tight tracking-tight text-foreground max-[900px]:text-base">
                 {meta.title}
               </h1>
               <p className="text-xs text-muted-foreground font-body max-[900px]:hidden">
                 {meta.description}
               </p>
             </div>
-            <div className="flex items-center gap-4 text-sm font-body text-muted-foreground max-[900px]:gap-2">
+            <div className="flex shrink-0 items-center gap-4 text-sm font-body text-muted-foreground max-[900px]:w-full max-[900px]:justify-end max-[900px]:gap-2">
+              <button
+                type="button"
+                onClick={() => setIsDarkMode(prev => !prev)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-secondary/50 text-foreground transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary/50"
+                aria-label={isDarkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+                title={isDarkMode ? "Modo claro" : "Modo oscuro"}
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
               {activeSection === "pagos" && !isLoading && data?.totalHistorico !== undefined && (
                 <div className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium border border-primary/20 max-[900px]:hidden">
                   Histórico: {data.totalHistorico} pagos
@@ -285,12 +347,55 @@ function App() {
                   Histórico: {chatData.historicoLeadsAtendidos} leads atendidos
                 </div>
               )}
-              <span className="text-xs max-[900px]:hidden">Periodo</span>
+              <span className="text-xs max-[900px]:hidden">Filtrar por</span>
+              <div className="flex items-center overflow-hidden rounded-full border border-border bg-secondary/50 p-0.5 max-[900px]:order-last max-[900px]:w-full max-[900px]:justify-end">
+                <button
+                  type="button"
+                  onClick={handleToday}
+                  className={`rounded-full px-4 py-1.5 text-xs transition-colors max-[900px]:px-2.5 ${periodFilter === "day" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"}`}
+                >Hoy</button>
+                <button
+                  type="button"
+                  onClick={handleThisWeek}
+                  className={`rounded-full px-4 py-1.5 text-xs transition-colors max-[900px]:px-2.5 ${periodFilter === "week" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"}`}
+                >Esta semana</button>
+                <select
+                  value={format(selectedMonth, "MM")}
+                  onChange={handleMonthChange}
+                  aria-label="Mes del periodo"
+                  className={`rounded-full border-0 px-3 py-1.5 text-xs capitalize focus:outline-none focus:ring-2 focus:ring-primary/50 max-[900px]:px-2 ${periodFilter === "month" ? "bg-primary text-primary-foreground" : "bg-transparent text-foreground"}`}
+                >
+                  {MONTH_OPTIONS.map(month => (
+                    <option key={month.value} value={month.value}>{month.label}</option>
+                  ))}
+                </select>
+                <select
+                  value={format(selectedMonth, "yyyy")}
+                  onChange={handleYearChange}
+                  aria-label="Año del periodo"
+                  className={`rounded-full border-0 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/50 max-[900px]:px-2 ${periodFilter === "year" ? "bg-primary text-primary-foreground" : "bg-transparent text-foreground"}`}
+                >
+                  {Array.from({ length: 7 }, (_, index) => new Date().getFullYear() - 3 + index).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+              <select
+                value={periodFilter}
+                onChange={handlePeriodChange}
+                aria-label="Tipo de periodo"
+                className="hidden"
+              >
+                <option value="day">Día</option>
+                <option value="week">Semana</option>
+                <option value="month">Mes</option>
+              </select>
               <input
-                type="month"
-                className="bg-secondary/50 border border-border rounded-lg px-3 py-1.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 max-[900px]:px-2 max-[900px]:py-1"
-                value={format(selectedMonth, "yyyy-MM")}
-                onChange={handleMonthChange}
+                type={periodFilter === "month" ? "month" : "date"}
+                className="hidden"
+                value={dateInputValue}
+                onChange={handleDateChange}
+                aria-label="Fecha del periodo"
               />
             </div>
           </div>
@@ -299,8 +404,8 @@ function App() {
         <main className="flex-1 px-8 py-8 max-[900px]:px-4">
           {activeSection === "pagos" ? (
             <>
-              <div className="flex flex-col min-[1100px]:flex-row justify-center items-start gap-6 mb-8 w-full max-w-6xl mx-auto pb-4">
-                <div className="w-full min-[1100px]:w-[320px] flex-shrink-0 flex flex-col gap-6">
+              <div className="grid grid-cols-1 min-[1100px]:grid-cols-2 items-stretch gap-6 mb-8 w-full max-w-6xl mx-auto pb-4">
+                <div className="w-full min-w-0 flex flex-col">
                   {isLoading ? (
                     <Skeleton className="h-[500px] w-full rounded-2xl" />
                   ) : (
@@ -313,24 +418,29 @@ function App() {
                       porcentajeConfirmadosManual={data?.porcentajeConfirmadosManual || 0}
                       porcentajeSinConfirmar={data?.porcentajeSinConfirmar || 0}
                       pagosWhatsapp={data?.pagosWhatsapp || 0}
-                      mesActual={format(selectedMonth, "MMMM yyyy", {
-                        locale: es,
-                      })}
+                      mesActual={selectedPeriodLabel}
                     />
                   )}
                 </div>
 
-                <div className="w-full min-[1100px]:w-auto flex flex-col items-start gap-6">
-                  {isLoading ? (
-                    <Skeleton className="h-[500px] w-full rounded-2xl min-w-[320px]" />
+                <div className="w-full min-w-0 flex flex-col">
+                  {isChatLoading || !chatData ? (
+                    <Skeleton className="h-full min-h-[300px] w-full rounded-2xl" />
                   ) : (
-                    <WeeklyChart />
+                    <IntencionPagoCard
+                      intencionPagoCount={chatData.intencionPagoCount}
+                      pagoEfectivoCount={chatData.pagoEfectivoCount}
+                      porcentajePagoEfectivo={chatData.porcentajePagoEfectivo}
+                    />
                   )}
-                  {isLoading ? (
-                    <Skeleton className="h-[400px] w-full rounded-2xl min-w-[320px]" />
-                  ) : (
-                    <BankMetrics data={data?.metodosDistribucion || []} />
-                  )}
+                </div>
+
+                <div className="w-full min-w-0 flex flex-col">
+                  {isLoading ? <Skeleton className="h-full min-h-[400px] w-full rounded-2xl" /> : <WeeklyChart data={data?.datosSemanales || []} />}
+                </div>
+
+                <div className="w-full min-w-0 flex flex-col">
+                  {isLoading ? <Skeleton className="h-full min-h-[400px] w-full rounded-2xl" /> : <BankMetrics data={data?.metodosDistribucion || []} />}
                 </div>
               </div>
 
@@ -341,12 +451,13 @@ function App() {
                   <DaysVolumeCard diasVolumen={data?.diasVolumen || []} />
                 )}
               </div>
+
             </>
           ) : (
             <ChatMetricsGrid
               data={chatData}
               isLoading={isChatLoading}
-              mesActual={selectedMonthLabel}
+              mesActual={selectedPeriodLabel}
             />
           )}
         </main>

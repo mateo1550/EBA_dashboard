@@ -16,7 +16,7 @@ export function IntencionPagoCard({
   const porcentajeNoConcretados = intencionPagoCount > 0 ? (noConcretados / intencionPagoCount) * 100 : 0;
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col gap-6 w-full">
+    <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col gap-6 w-full h-full min-w-0 overflow-hidden">
       <div>
         <div className="flex items-center gap-2 mb-1">
           <h2 className="text-xl font-display font-bold text-foreground">Intención vs. Pago Efectivo</h2>
@@ -37,8 +37,8 @@ export function IntencionPagoCard({
       </div>
 
       {/* Grid horizontal para números */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-secondary/20 rounded-xl p-4 flex flex-col">
+      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4">
+        <div className="bg-secondary/20 rounded-xl p-4 flex min-w-0 flex-col">
           <span className="text-xs font-body font-medium text-muted-foreground flex items-center gap-1.5 mb-1">
             <CreditCard className="w-3.5 h-3.5 text-primary" />
             Intención de Pago
@@ -47,7 +47,7 @@ export function IntencionPagoCard({
           <span className="text-[10px] text-muted-foreground font-body mt-1">Consultaron sobre deudas/cuotas</span>
         </div>
 
-        <div className="bg-secondary/20 rounded-xl p-4 flex flex-col">
+        <div className="bg-secondary/20 rounded-xl p-4 flex min-w-0 flex-col">
           <span className="text-xs font-body font-medium text-muted-foreground flex items-center gap-1.5 mb-1">
             <CheckCircle className="w-3.5 h-3.5 text-green-500" />
             Pagos Efectivos

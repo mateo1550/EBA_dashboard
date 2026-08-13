@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { getPeriodQueryKey, getPeriodRange, type PeriodFilter } from '@/lib/period';
 
 export interface ChatInteraction {
   id: number;
@@ -82,12 +82,13 @@ export interface ChatMetrics {
   departamentosMetrics: DepartmentMetricItem[];
 }
 
-export function useChatMetrics(selectedMonth: Date = new Date()) {
+export function useChatMetrics(selectedDate: Date = new Date(), period: PeriodFilter = 'month') {
   return useQuery({
-    queryKey: ['chatMetrics', format(selectedMonth, 'yyyy-MM')],
+    queryKey: ['chatMetrics', getPeriodQueryKey(selectedDate, period)],
     queryFn: async (): Promise<ChatMetrics> => {
-      const inicio = startOfMonth(selectedMonth).toISOString();
-      const fin = endOfMonth(selectedMonth).toISOString();
+      const periodRange = getPeriodRange(selectedDate, period);
+      const inicio = periodRange.start.toISOString();
+      const fin = periodRange.end.toISOString();
 
       const [
         { data: chatData, error: chatError },

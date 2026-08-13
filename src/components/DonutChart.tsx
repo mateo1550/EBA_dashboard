@@ -1,4 +1,5 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { MetricInfoTooltip } from "./MetricInfoTooltip";
 
 interface DonutChartProps {
   data: { name: string; value: number }[];
@@ -22,7 +23,10 @@ const getStatusColor = (name: string) => {
 export function DonutChart({ data, totalLabel, totalValue }: DonutChartProps) {
   return (
     <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col h-full">
-      <h3 className="text-sm text-muted-foreground font-body font-medium mb-4">Estado de Pagos</h3>
+      <div className="flex items-center gap-2 mb-4">
+        <h3 className="text-sm text-muted-foreground font-body font-medium">Estado de Pagos</h3>
+        <MetricInfoTooltip content="Resumen de pagos confirmados, confirmados manualmente y pendientes de confirmación." />
+      </div>
       <div className="flex-1 w-full h-[250px] relative">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

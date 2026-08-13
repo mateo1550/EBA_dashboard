@@ -25,9 +25,9 @@ export function SummaryCard({
   mesActual,
 }: SummaryCardProps) {
   return (
-    <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 w-full">
-      <div className="grid grid-cols-1 min-[900px]:grid-cols-2 gap-5">
-        <div className="flex flex-col gap-4">
+    <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 w-full h-full">
+      <div className="grid grid-cols-1 min-[900px]:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-5">
+        <div className="flex min-w-0 flex-col gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-xl font-display font-bold text-foreground">Resumen de Pagos</h2>
@@ -60,14 +60,14 @@ export function SummaryCard({
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-3">
-          <div className="bg-secondary/30 rounded-xl p-4 relative overflow-hidden group flex flex-col justify-center">
+        <div className="grid min-w-0 grid-cols-1 gap-3">
+          <div className="bg-secondary/30 rounded-xl p-4 relative overflow-hidden group flex min-w-0 flex-col justify-center">
             <Cpu className="absolute -right-4 -top-4 w-24 h-24 text-[#3b82f6] opacity-5 group-hover:opacity-10 transition-opacity" />
             <div className="flex items-center gap-2 mb-2">
               <Cpu className="w-4 h-4 text-[#3b82f6]" />
               <span className="text-xs font-display font-bold tracking-wider text-foreground uppercase">Automático</span>
             </div>
-            <p className="text-5xl font-display font-bold text-[#3b82f6] mb-1">
+            <p className="whitespace-nowrap text-5xl tracking-tight font-display font-bold text-[#3b82f6] mb-1">
               {porcentajeConfirmados.toFixed(1)}%
             </p>
             <p className="text-xs text-muted-foreground font-body">
@@ -75,13 +75,13 @@ export function SummaryCard({
             </p>
           </div>
 
-          <div className="bg-secondary/30 rounded-xl p-4 relative overflow-hidden group flex flex-col justify-center">
+          <div className="bg-secondary/30 rounded-xl p-4 relative overflow-hidden group flex min-w-0 flex-col justify-center">
             <UserCheck className="absolute -right-4 -top-4 w-24 h-24 text-[#64748b] opacity-5 group-hover:opacity-10 transition-opacity" />
             <div className="flex items-center gap-2 mb-2">
               <UserCheck className="w-4 h-4 text-[#64748b]" />
               <span className="text-xs font-display font-bold tracking-wider text-foreground uppercase">Manual</span>
             </div>
-            <p className="text-5xl font-display font-bold text-[#64748b] mb-1">
+            <p className="whitespace-nowrap text-5xl tracking-tight font-display font-bold text-[#64748b] mb-1">
               {porcentajeConfirmadosManual.toFixed(1)}%
             </p>
             <p className="text-xs text-muted-foreground font-body">
@@ -89,13 +89,13 @@ export function SummaryCard({
             </p>
           </div>
 
-          <div className="bg-secondary/30 rounded-xl p-4 relative overflow-hidden group flex flex-col justify-center">
+          <div className="bg-secondary/30 rounded-xl p-4 relative overflow-hidden group flex min-w-0 flex-col justify-center">
             <Clock className="absolute -right-4 -top-4 w-24 h-24 text-[#ef4444] opacity-5 group-hover:opacity-10 transition-opacity" />
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-[#ef4444]" />
               <span className="text-xs font-display font-bold tracking-wider text-foreground uppercase">Pendiente</span>
             </div>
-            <p className="text-5xl font-display font-bold text-[#ef4444] mb-1">
+            <p className="whitespace-nowrap text-5xl tracking-tight font-display font-bold text-[#ef4444] mb-1">
               {porcentajeSinConfirmar.toFixed(1)}%
             </p>
             <p className="text-xs text-muted-foreground font-body">

@@ -1,4 +1,5 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { MetricInfoTooltip } from "./MetricInfoTooltip";
 
 interface ClientesLeadsChartProps {
   data: { name: string; value: number }[];
@@ -20,7 +21,10 @@ export function ClientesLeadsChart({ data, total }: ClientesLeadsChartProps) {
   return (
     <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col gap-6 w-full min-w-0">
       <div className="flex flex-col items-center text-center gap-1">
-        <h3 className="text-base font-display font-semibold text-foreground">P&uacute;blico (Clientes vs. Leads)</h3>
+        <div className="flex items-center justify-center gap-2">
+          <h3 className="text-base font-display font-semibold text-foreground">P&uacute;blico (Clientes vs. Leads)</h3>
+          <MetricInfoTooltip content="Distribución de las conversaciones entre clientes identificados, leads y registros sin clasificación." />
+        </div>
       </div>
 
       <div className="w-full flex justify-center">
@@ -38,10 +42,10 @@ export function ClientesLeadsChart({ data, total }: ClientesLeadsChartProps) {
                     borderRadius: "12px",
                     border: "none",
                     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-                    backgroundColor: "white",
+                    backgroundColor: "var(--color-popover)",
                     fontFamily: "Manrope, sans-serif",
                   }}
-                  itemStyle={{ color: "#000" }}
+                  itemStyle={{ color: "var(--color-popover-foreground)" }}
                 />
               </PieChart>
             </ResponsiveContainer>

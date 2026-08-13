@@ -1,4 +1,5 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { MetricInfoTooltip } from "./MetricInfoTooltip";
 
 interface BankDistribution {
   name: string;
@@ -26,7 +27,7 @@ export function BankMetrics({ data }: BankMetricsProps) {
   const listMaxHeight = 5 * 38 + 4 * 8;
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col gap-5 w-full min-w-0 overflow-hidden">
+    <div className="bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col gap-5 w-full h-full min-w-0 overflow-hidden">
       {data.length === 0 ? (
         <div className="flex h-[160px] items-center justify-center">
           <span className="text-muted-foreground text-sm font-body">No hay datos.</span>
@@ -36,7 +37,10 @@ export function BankMetrics({ data }: BankMetricsProps) {
           <div className="flex flex-col min-[480px]:flex-row items-center min-[480px]:items-start gap-6 w-full min-w-0 min-[1000px]:w-fit min-[1000px]:gap-6">
             <div className="flex flex-col gap-3 w-[200px] max-w-full flex-shrink-0">
               <div className="flex flex-col items-start gap-1 text-left">
-                <h3 className="text-base font-display font-semibold text-foreground">Distribuci&oacute;n por Banco</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-display font-semibold text-foreground">Distribuci&oacute;n por Banco</h3>
+                  <MetricInfoTooltip content="Distribución de los pagos según el banco o método identificado en cada registro." />
+                </div>
                 <span className="text-xs text-muted-foreground font-body">M&eacute;todos de pago</span>
               </div>
 
@@ -62,10 +66,10 @@ export function BankMetrics({ data }: BankMetricsProps) {
                         borderRadius: "12px",
                         border: "none",
                         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-                        backgroundColor: "white",
+                        backgroundColor: "var(--color-popover)",
                         fontFamily: "Manrope, sans-serif",
                       }}
-                      itemStyle={{ color: "#000" }}
+                      itemStyle={{ color: "var(--color-popover-foreground)" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
